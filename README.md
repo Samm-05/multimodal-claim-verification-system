@@ -257,36 +257,68 @@ not_enough_information
 
 ---
 
-# 📂 Project Structure
-
-```text
+📂 Project Structure
 multimodal-claim-verification-system/
 
-├── data/
-│   ├── claims/
-│   ├── image_specs/
+├── .agents/                     # AI agent configurations and prompts
 │
-├── src/
+├── .venv/                       # Python virtual environment (excluded from Git)
+│
+├── data/                        # Dataset files and metadata
+│   ├── claims.csv
+│   ├── sample_claims.csv
+│   ├── user_history.csv
+│   └── evidence_requirements.csv
+│
+├── evaluation/                  # Evaluation reports and analysis
+│   ├── evaluation_report.md
+│   └── evaluation_report.json
+│
+├── images/                      # Sample and test claim images
+│   ├── sample/
+│   └── test/
+│
+├── logs/                        # Application logs and execution tracking
+│
+├── outputs/                     # Generated outputs and reports
+│
+├── scripts/                     # Utility and image generation scripts
+│   └── generate_images.py
+│
+├── src/                         # Main application source code
 │   └── claim_verification/
-│       ├── agents/
-│       ├── application/
-│       ├── domain/
-│       ├── infrastructure/
-│       ├── evaluation/
-│       └── vision/
+│       ├── agents/              # Multi-agent system
+│       │   ├── claim_extraction_agent.py
+│       │   ├── vision_analysis_agent.py
+│       │   ├── image_quality_agent.py
+│       │   ├── evidence_validation_agent.py
+│       │   ├── risk_assessment_agent.py
+│       │   └── decision_agent.py
+│       │
+│       ├── application/         # Pipeline orchestration
+│       ├── domain/              # Models, schemas, enums
+│       ├── infrastructure/      # Data access and repositories
+│       ├── evaluation/          # Evaluation engine
+│       └── vision/              # Computer vision utilities
 │
-├── tests/
+├── tests/                       # Unit and integration tests
+│   ├── test_claim_extraction_agent.py
+│   ├── test_evidence_validation_agent.py
+│   └── test_output_schema.py
 │
-├── evaluation/
-│   └── evaluation_report.md
+├── .gitignore                   # Git ignore rules
 │
-├── output.csv
+├── architecture.md              # Detailed system architecture
 │
-├── requirements.txt
+├── output.csv                   # Final prediction output
 │
-├── README.md
+├── pytest.ini                   # Pytest configuration
 │
-└── scripts/
+├── README.md                    # Project documentation
+│
+├── requirements.txt             # Python dependencies
+│
+└── run.py                       # Main application entry point
 ```
 
 ---
