@@ -48,6 +48,8 @@ class ClaimVerificationPipeline:
                 user_history.get(claim.user_id),
             )
             decision = self._decision_agent.decide(evidence, risk)
+            issue_type = self._prefer_specific(extraction.issue_type, vision.issue_type)
+            object_part = self._prefer_specific(extraction.object_part, vision.object_part)
             outputs.append(
                 FinalClaimOutput(
                     user_id=claim.user_id,
@@ -57,8 +59,8 @@ class ClaimVerificationPipeline:
                     evidence_standard_met=evidence.evidence_standard_met,
                     evidence_standard_met_reason=evidence.evidence_standard_met_reason,
                     risk_flags=";".join(risk.risk_flags),
-                    issue_type=extraction.issue_type,
-                    object_part=extraction.object_part,
+                    issue_type=issue_type,
+                    object_part=object_part,
                     claim_status=self._value(decision.claim_status),
                     claim_status_justification=decision.claim_status_justification,
                     supporting_image_ids=";".join(vision.supporting_image_ids),
@@ -75,3 +77,9 @@ class ClaimVerificationPipeline:
     @staticmethod
     def _value(value: object) -> str:
         return str(getattr(value, "value", value))
+
+    @classmethod
+    def _prefer_specific(cls, primary: object, fallback: object) -> str:
+        primary_value = cls._value(primary)
+        fallback_value = cls._value(fallback)
+        return fallback_value if primary_value == "unspecified" else primary_value
