@@ -88,7 +88,11 @@ class EvidenceValidationAgent:
             failures.append("No image paths were submitted with the claim.")
             return failures
 
-        readable_images = [item for item in vision.image_evidence if item.exists and item.readable]
+        readable_images = [
+            item
+            for item in vision.image_evidence
+            if item.valid_image or (item.image_id in {image.image_id for image in vision.images if image.readable})
+        ]
         if not readable_images:
             failures.append("No submitted image could be found and decoded for visual verification.")
             return failures
