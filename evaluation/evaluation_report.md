@@ -11,7 +11,7 @@
 
 | Target | Accuracy | Precision | Recall | F1 Score |
 |---|---:|---:|---:|---:|
-| claim_status | 0.5500 | 0.4074 | 0.4462 | 0.4026 |
+| claim_status | 0.6500 | 0.4815 | 0.5385 | 0.4805 |
 | evidence_standard_met | 0.7500 | 0.4412 | 0.4167 | 0.4286 |
 | valid_image | 0.9500 | 0.9737 | 0.7500 | 0.8198 |
 | severity | 0.9000 | 0.7000 | 0.8000 | 0.7333 |
@@ -21,10 +21,10 @@
 | Column | Accuracy |
 |---|---:|
 | evidence_standard_met | 0.7500 |
-| risk_flags | 0.3000 |
+| risk_flags | 0.3500 |
 | issue_type | 0.7500 |
 | object_part | 0.9500 |
-| claim_status | 0.5500 |
+| claim_status | 0.6500 |
 | supporting_image_ids | 0.8000 |
 | valid_image | 0.9500 |
 | severity | 0.9000 |
@@ -45,19 +45,19 @@
 | 8 | user_008 | risk_flags | non_original_image;claim_mismatch;user_history_risk;manual_review_required | claim_mismatch;non_original_image;user_history_risk;manual_review_required |
 | 8 | user_008 | supporting_image_ids | none | img_1 |
 | 10 | user_010 | evidence_standard_met | False | True |
-| 10 | user_010 | risk_flags | wrong_angle;blurry_image;damage_not_visible;claim_mismatch;manual_review_required | none |
+| 10 | user_010 | risk_flags | wrong_angle;blurry_image;damage_not_visible | none |
 | 10 | user_010 | claim_status | not_enough_information | supported |
 | 12 | user_012 | risk_flags | blurry_image;damage_not_visible;claim_mismatch;manual_review_required | none |
 | 12 | user_012 | claim_status | contradicted | supported |
-| 13 | user_018 | risk_flags | claim_mismatch;manual_review_required | none |
 | 13 | user_018 | claim_status | contradicted | supported |
 | 14 | user_020 | risk_flags | blurry_image;damage_not_visible;claim_mismatch;user_history_risk;manual_review_required | damage_not_visible;user_history_risk;manual_review_required |
 | 14 | user_020 | issue_type | dent | none |
-| 14 | user_020 | claim_status | supported | contradicted |
 | 14 | user_020 | supporting_image_ids | none | img_1 |
 | 15 | user_015 | evidence_standard_met | False | True |
 | 15 | user_015 | risk_flags | wrong_angle | none |
 | 15 | user_015 | claim_status | not_enough_information | supported |
+| 16 | user_030 | risk_flags | blurry_image;damage_not_visible | none |
+| 17 | user_031 | risk_flags | blurry_image;claim_mismatch;user_history_risk;manual_review_required | user_history_risk;manual_review_required |
 
 ## Failure Modes
 
@@ -74,16 +74,14 @@
 | 10 | user_010 | not_enough_information | supported |
 | 12 | user_012 | contradicted | supported |
 | 13 | user_018 | contradicted | supported |
-| 14 | user_020 | supported | contradicted |
 | 15 | user_015 | not_enough_information | supported |
-| 16 | user_030 | contradicted | supported |
 | 17 | user_031 | contradicted | supported |
 | 18 | user_032 | contradicted | not_enough_information |
 
 ## Runtime Analysis
 
-- Runtime seconds: 1.4388
-- Records per second: 13.9005
+- Runtime seconds: 1.6514
+- Records per second: 12.1109
 
 ## Cost Estimation
 
@@ -103,4 +101,4 @@
 - retry_strategy: per-claim bounded retries with recovery output
 - rate_limit_strategy: not required for local CPU pipeline
 - token_estimate: 0
-- throughput_records_per_second: 13.9005
+- throughput_records_per_second: 12.1109
