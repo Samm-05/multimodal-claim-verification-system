@@ -13,7 +13,18 @@ from claim_verification.domain.models import (
 )
 
 
-class RiskAssessmentAgent:
+    OUTPUT_FLAGS = {
+        RiskFlag.BLURRY_IMAGE.value,
+        RiskFlag.WRONG_ANGLE.value,
+        RiskFlag.DAMAGE_NOT_VISIBLE.value,
+        RiskFlag.CROPPED_OR_OBSTRUCTED.value,
+        RiskFlag.CLAIM_MISMATCH.value,
+        RiskFlag.WRONG_OBJECT.value,
+        RiskFlag.NON_ORIGINAL_IMAGE.value,
+        RiskFlag.TEXT_INSTRUCTION_PRESENT.value,
+        RiskFlag.USER_HISTORY_RISK.value,
+        RiskFlag.MANUAL_REVIEW_REQUIRED.value,
+    }
     """Produce contextual risk flags without overriding visual evidence conclusions."""
 
     def __init__(self, user_history: dict[str, UserHistory] | None = None) -> None:
@@ -70,23 +81,28 @@ class RiskAssessmentAgent:
             flags.extend(history_flags)
             score += history_score
 
-        if not evidence.evidence_standard_met:
+        if not evidence.evidence_standard_met and RiskFlag.INSUFFICIENT_EVIDENCE.value in self.OUTPUT_FLAGS:
             flags.append(RiskFlag.INSUFFICIENT_EVIDENCE.value)
             score += 0.15
-        if vision.duplicate_image_ids:
+        if vision.duplicate_image_ids and RiskFlag.DUPLICATE_IMAGES.value in self.OUTPUT_FLAGS:
             flags.append(RiskFlag.DUPLICATE_IMAGES.value)
             score += 0.1
         if claim_issue in {IssueType.UNSPECIFIED.value, IssueType.UNKNOWN.value} or claim_part in {
             ObjectPart.UNSPECIFIED.value,
             ObjectPart.UNKNOWN.value,
         }:
-            flags.append(RiskFlag.AMBIGUOUS_CLAIM_DESCRIPTION.value)
-            score += 0.05
+            if RiskFlag.AMBIGUOUS_CLAIM_DESCRIPTION.value in self.OUTPUT_FLAGS:
+                flags.append(RiskFlag.AMBIGUOUS_CLAIM_DESCRIPTION.value)
+                score += 0.05
 
-        if score >= 0.2 or RiskFlag.USER_HISTORY_RISK.value in flags:
+        if (
+            RiskFlag.MANUAL_REVIEW_REQUIRED.value in self.OUTPUT_FLAGS
+            and (score >= 0.2 or RiskFlag.USER_HISTORY_RISK.value in flags or RiskFlag.CLAIM_MISMATCH.value in flags)
+        ):
             flags.append(RiskFlag.MANUAL_REVIEW_REQUIRED.value)
 
-        flags = self._dedupe(flags) or [RiskFlag.NONE.value]
+        flags = [flag for flag in self._dedupe(flags) if flag in self.OUTPUT_FLAGS]
+        flags = flags or [RiskFlag.NONE.value]
         return RiskAssessmentResult(
             risk_flags=flags,
             risk_score=round(min(score, 1.0), 3),
