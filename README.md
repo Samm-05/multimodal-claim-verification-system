@@ -547,10 +547,6 @@ Included:
 
 **Samyak Mahatme**
 
-Machine Learning Engineer | AI Developer | Computer Vision Enthusiast
-
-GitHub: https://github.com/Samm-05
-
 ---
 
 # ⭐ Highlights
