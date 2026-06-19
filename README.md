@@ -1,99 +1,41 @@
-# Multi-Modal Claim Verification System
+# 🚀 Multi-Modal Claim Verification System
 
 > AI-Powered Damage Claim Verification using Multi-Agent Architecture, Computer Vision, Evidence Validation, and Risk Assessment.
 
 ---
 
-## 📌 Project Overview
+## 📌 Overview
 
-The **Multi-Modal Claim Verification System** is an AI-driven solution designed to automatically review and verify insurance-style damage claims using:
+The **Multi-Modal Claim Verification System** is an end-to-end AI solution designed to automatically verify damage claims using:
 
 * 📷 Images (Primary Source of Truth)
 * 💬 Customer Claim Conversations
 * 👤 User Claim History
 * 📋 Evidence Requirements
 
-The system analyzes submitted evidence and determines whether a claim is:
+The system evaluates whether submitted image evidence supports, contradicts, or lacks sufficient information to verify a customer's claim.
 
-* **Supported**
-* **Contradicted**
-* **Not Enough Information**
-
-The solution follows a **multi-agent architecture** that separates vision analysis, evidence validation, risk assessment, and final decision-making to ensure explainable and scalable claim processing.
+The solution follows a **Multi-Agent Architecture** where each agent is responsible for a specific task, enabling modularity, explainability, scalability, and production readiness.
 
 ---
 
 ## 🎯 Problem Statement
 
-Manual claim verification is time-consuming, inconsistent, and expensive.
+Organizations process thousands of damage claims every day involving:
 
-Organizations receive thousands of claims involving:
+* 🚗 Cars
+* 💻 Laptops
+* 📦 Packages
 
-* 🚗 Vehicle Damage
-* 💻 Laptop Damage
-* 📦 Package Damage
+Manual review is expensive, slow, and inconsistent.
 
-Each claim may contain:
+This project automates claim verification by:
 
-* Multiple images
-* Customer conversations
-* Historical user data
-* Different evidence requirements
-
-The challenge is to build an automated system that verifies whether the submitted image evidence supports the customer's damage claim while maintaining transparency and consistency.
-
----
-
-## 🚀 Key Features
-
-### Claim Understanding
-
-* Extracts damage claims from customer conversations
-* Identifies claimed issue type
-* Identifies claimed object part
-
-### Image Analysis
-
-* Processes one or multiple images
-* Detects visible damage
-* Detects image quality issues
-* Identifies relevant object parts
-
-### Evidence Validation
-
-* Verifies evidence against predefined requirements
-* Ensures sufficient visual evidence exists
-
-### Risk Assessment
-
-* Uses historical user claim patterns
-* Adds risk context
-* Does not override visual evidence
-
-### Decision Engine
-
-Determines:
-
-* Supported
-* Contradicted
-* Not Enough Information
-
-### Explainable Outputs
-
-Provides:
-
-* Supporting image IDs
-* Damage type
-* Severity level
-* Risk flags
-* Justifications
-
-### Evaluation Framework
-
-* Automated evaluation workflow
-* Performance reporting
-* Error analysis
-* Runtime analysis
+1. Understanding customer conversations.
+2. Analyzing submitted images.
+3. Validating evidence sufficiency.
+4. Assessing historical claim risk.
+5. Producing an explainable final decision.
 
 ---
 
@@ -140,13 +82,13 @@ Customer Claim
 
 # 🤖 Multi-Agent Pipeline
 
-## 1. Claim Extraction Agent
+## 1️⃣ Claim Extraction Agent
 
 Responsible for:
 
-* Understanding customer conversations
-* Extracting issue type
-* Extracting object part
+* Parsing customer conversations
+* Identifying issue type
+* Identifying object part
 * Structuring claim information
 
 ### Example
@@ -154,21 +96,21 @@ Responsible for:
 Input:
 
 ```text
-My car door was scratched while parked.
+"My laptop screen cracked after it fell from the table."
 ```
 
 Output:
 
 ```json
 {
-  "issue_type": "scratch",
-  "object_part": "door"
+  "issue_type": "crack",
+  "object_part": "screen"
 }
 ```
 
 ---
 
-## 2. Vision Analysis Agent
+## 2️⃣ Vision Analysis Agent
 
 Responsible for:
 
@@ -186,7 +128,7 @@ Outputs:
 
 ---
 
-## 3. Image Quality Agent
+## 3️⃣ Image Quality Agent
 
 Detects:
 
@@ -205,13 +147,13 @@ risk_flags
 
 ---
 
-## 4. Evidence Validation Agent
+## 4️⃣ Evidence Validation Agent
 
 Checks:
 
 * Evidence sufficiency
-* Minimum image requirements
-* Object-specific evidence rules
+* Required visual coverage
+* Object-specific evidence requirements
 
 Outputs:
 
@@ -221,14 +163,14 @@ evidence_standard_met
 
 ---
 
-## 5. Risk Assessment Agent
+## 5️⃣ Risk Assessment Agent
 
 Analyzes:
 
-* User history
-* Previous claims
-* Rejection patterns
-* Review patterns
+* User claim history
+* Previous approvals
+* Previous rejections
+* Manual review patterns
 
 Outputs:
 
@@ -239,15 +181,15 @@ manual_review_required
 
 ---
 
-## 6. Decision Agent
+## 6️⃣ Decision Agent
 
 Combines:
 
-* Vision Results
+* Vision Analysis
 * Evidence Validation
 * Risk Assessment
 
-Produces final decision:
+Produces final decisions:
 
 ```text
 supported
@@ -257,97 +199,172 @@ not_enough_information
 
 ---
 
-📂 Project Structure
+# ✨ Key Features
+
+### Claim Understanding
+
+* Customer conversation parsing
+* Issue extraction
+* Object part extraction
+
+### Computer Vision
+
+* Multi-image analysis
+* Damage identification
+* Severity estimation
+
+### Image Quality Assessment
+
+* Blur detection
+* Visibility validation
+* Angle verification
+
+### Evidence Validation
+
+* Rule-based evidence verification
+* Minimum evidence requirements
+
+### Risk Assessment
+
+* Historical claim analysis
+* User risk scoring
+
+### Explainable AI
+
+* Justification generation
+* Supporting image selection
+* Transparent decision logic
+
+### Evaluation Framework
+
+* Automated evaluation
+* Error analysis
+* Runtime analysis
+* Cost estimation
+
+---
+
+# 📂 Project Structure
+
+```text
 multimodal-claim-verification-system/
 
-├── .agents/                     # AI agent configurations and prompts
+├── .agents/
 │
-├── .venv/                       # Python virtual environment (excluded from Git)
+├── .venv/
 │
-├── data/                        # Dataset files and metadata
+├── data/
 │   ├── claims.csv
 │   ├── sample_claims.csv
 │   ├── user_history.csv
 │   └── evidence_requirements.csv
 │
-├── evaluation/                  # Evaluation reports and analysis
+├── evaluation/
 │   ├── evaluation_report.md
 │   └── evaluation_report.json
 │
-├── images/                      # Sample and test claim images
+├── images/
 │   ├── sample/
 │   └── test/
 │
-├── logs/                        # Application logs and execution tracking
+├── logs/
 │
-├── outputs/                     # Generated outputs and reports
+├── outputs/
 │
-├── scripts/                     # Utility and image generation scripts
+├── scripts/
 │   └── generate_images.py
 │
-├── src/                         # Main application source code
+├── src/
 │   └── claim_verification/
-│       ├── agents/              # Multi-agent system
-│       │   ├── claim_extraction_agent.py
-│       │   ├── vision_analysis_agent.py
-│       │   ├── image_quality_agent.py
-│       │   ├── evidence_validation_agent.py
-│       │   ├── risk_assessment_agent.py
-│       │   └── decision_agent.py
-│       │
-│       ├── application/         # Pipeline orchestration
-│       ├── domain/              # Models, schemas, enums
-│       ├── infrastructure/      # Data access and repositories
-│       ├── evaluation/          # Evaluation engine
-│       └── vision/              # Computer vision utilities
+│       ├── agents/
+│       ├── application/
+│       ├── domain/
+│       ├── infrastructure/
+│       ├── evaluation/
+│       └── vision/
 │
-├── tests/                       # Unit and integration tests
+├── tests/
 │   ├── test_claim_extraction_agent.py
 │   ├── test_evidence_validation_agent.py
 │   └── test_output_schema.py
 │
-├── .gitignore                   # Git ignore rules
-│
-├── architecture.md              # Detailed system architecture
-│
-├── output.csv                   # Final prediction output
-│
-├── pytest.ini                   # Pytest configuration
-│
-├── README.md                    # Project documentation
-│
-├── requirements.txt             # Python dependencies
-│
-└── run.py                       # Main application entry point
+├── .gitignore
+├── architecture.md
+├── output.csv
+├── pytest.ini
+├── README.md
+├── requirements.txt
+└── run.py
 ```
+
+---
+
+# 🏛️ Architecture Principles
+
+The project follows a layered architecture:
+
+```text
+User Input
+     │
+     ▼
+Application Layer
+     │
+     ▼
+Agent Layer
+     │
+     ├── Claim Extraction
+     ├── Vision Analysis
+     ├── Image Quality
+     ├── Evidence Validation
+     ├── Risk Assessment
+     └── Decision Agent
+     │
+     ▼
+Domain Layer
+     │
+     ▼
+Infrastructure Layer
+     │
+     ▼
+Output Generation
+```
+
+Benefits:
+
+* Separation of Concerns
+* Scalability
+* Maintainability
+* Explainability
+* Testability
+* Production Readiness
 
 ---
 
 # 🛠️ Tech Stack
 
-### Programming Language
+## Programming Language
 
 * Python 3.12
 
-### Computer Vision
+## Computer Vision
 
 * OpenCV
 * Pillow
 
-### Data Processing
+## Data Processing
 
 * Pandas
 * NumPy
 
-### Validation & Models
+## Data Validation
 
 * Pydantic
 
-### Testing
+## Testing
 
 * Pytest
 
-### Logging
+## Logging
 
 * Python Logging
 
@@ -355,30 +372,30 @@ multimodal-claim-verification-system/
 
 # 📊 Evaluation Results
 
-## Sample Dataset Performance
+## Sample Dataset Metrics
 
-| Metric                        | Score |
-| ----------------------------- | ----- |
-| Claim Status Accuracy         | 65%   |
-| Evidence Standard Accuracy    | 75%   |
-| Issue Type Accuracy           | 75%   |
-| Object Part Accuracy          | 95%   |
-| Valid Image Accuracy          | 95%   |
-| Severity Accuracy             | 90%   |
-| Supporting Image IDs Accuracy | 80%   |
+| Metric                     | Score |
+| -------------------------- | ----- |
+| Claim Status Accuracy      | 65%   |
+| Evidence Standard Accuracy | 75%   |
+| Issue Type Accuracy        | 75%   |
+| Object Part Accuracy       | 95%   |
+| Valid Image Accuracy       | 95%   |
+| Severity Accuracy          | 90%   |
+| Supporting Image Accuracy  | 80%   |
 
 ---
 
-## Runtime Performance
+## Runtime Statistics
 
-| Metric            | Value        |
-| ----------------- | ------------ |
-| Records Processed | 20           |
-| Images Processed  | 29           |
-| Runtime           | 1.64 Seconds |
-| Records / Second  | 12.23        |
-| Failed Records    | 0            |
-| Retry Attempts    | 0            |
+| Metric            | Value                |
+| ----------------- | -------------------- |
+| Records Processed | 20                   |
+| Images Processed  | 29                   |
+| Runtime           | 1.64 Seconds         |
+| Throughput        | 12.23 Records/Second |
+| Failed Records    | 0                    |
+| Retry Attempts    | 0                    |
 
 ---
 
@@ -390,7 +407,7 @@ Current implementation uses:
 OpenCV + Pillow
 ```
 
-No external AI APIs are used.
+No external APIs or paid AI services are required.
 
 Estimated Processing Cost:
 
@@ -408,7 +425,7 @@ The system generates:
 output.csv
 ```
 
-with the following fields:
+Fields:
 
 ```text
 user_id
@@ -429,7 +446,34 @@ severity
 
 ---
 
-# 🧪 Running the Project
+# 🧪 Installation
+
+## Clone Repository
+
+```bash
+git clone https://github.com/Samm-05/multimodal-claim-verification-system.git
+cd multimodal-claim-verification-system
+```
+
+## Create Virtual Environment
+
+```bash
+python -m venv .venv
+```
+
+## Activate Environment
+
+### Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+### Linux / Mac
+
+```bash
+source .venv/bin/activate
+```
 
 ## Install Dependencies
 
@@ -439,14 +483,14 @@ pip install -r requirements.txt
 
 ---
 
+# ▶️ Usage
+
 ## Generate Images
 
 ```bash
 $env:PYTHONPATH="src"
 python scripts/generate_images.py --dataset all
 ```
-
----
 
 ## Run Predictions
 
@@ -455,16 +499,12 @@ $env:PYTHONPATH="src"
 python -m claim_verification.main --input claims
 ```
 
----
-
 ## Run Evaluation
 
 ```bash
 $env:PYTHONPATH="src"
 python -m claim_verification.main --input sample --evaluate
 ```
-
----
 
 ## Run Tests
 
@@ -475,28 +515,29 @@ pytest
 
 ---
 
-# 🔮 Future Improvements
+# 📈 Future Improvements
 
-* Multimodal Vision Language Models (VLMs)
+* Vision Language Models (VLMs)
 * GPT-4o Vision Integration
 * Gemini Vision Integration
-* Fraud Detection Engine
 * Confidence Scoring Framework
+* Fraud Detection Engine
 * Human Review Dashboard
 * Cloud Deployment
-* Real-Time Claim Processing API
+* REST API Service
+* Real-Time Claim Verification
 
 ---
 
-# 🎯 Submission Deliverables
+# 📦 Deliverables
 
 Included:
 
-* ✅ Full Source Code
+* ✅ Source Code
 * ✅ Multi-Agent Architecture
 * ✅ Evaluation Workflow
 * ✅ Evaluation Report
-* ✅ Output CSV Generation
+* ✅ Output Generation
 * ✅ Automated Testing
 * ✅ Documentation
 
@@ -506,16 +547,20 @@ Included:
 
 **Samyak Mahatme**
 
+Machine Learning Engineer | AI Developer | Computer Vision Enthusiast
+
+GitHub: https://github.com/Samm-05
+
 ---
 
-## ⭐ Project Highlights
+# ⭐ Highlights
 
 * Multi-Agent AI Architecture
 * Explainable Decision Making
 * Evidence-Based Verification
-* Image-Centric Reasoning
-* Risk-Aware Claim Assessment
-* Scalable Production-Oriented Design
-* End-to-End Automated Evaluation Pipeline
+* Computer Vision Pipeline
+* Risk-Aware Assessment
+* Automated Evaluation Framework
+* Production-Oriented Design
 
-**Built for the Multi-Modal Evidence Review Challenge.** 🚀
+**Built for the Multi-Modal Evidence Review Challenge 🚀**
