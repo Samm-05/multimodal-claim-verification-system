@@ -3,9 +3,17 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt, StrictStr, field_validator
 
-from claim_verification.domain.enums import ClaimObject, ClaimStatus, Severity
+from claim_verification.domain.enums import (
+    ClaimObject,
+    ClaimStatus,
+    ImageQualityRisk,
+    IssueType,
+    ObjectPart,
+    RiskFlag,
+    Severity,
+)
 
 
 OUTPUT_COLUMNS = [
@@ -26,12 +34,19 @@ OUTPUT_COLUMNS = [
 ]
 
 
-class ClaimRecord(BaseModel):
-    model_config = ConfigDict(use_enum_values=True)
+class StrictSchema(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+        use_enum_values=True,
+        arbitrary_types_allowed=False,
+    )
 
-    user_id: str
-    image_paths: list[str]
-    user_claim: str
+
+class ClaimInput(StrictSchema):
+    user_id: StrictStr
+    image_paths: list[StrictStr]
+    user_claim: StrictStr
     claim_object: ClaimObject
     source_row: dict[str, Any] = Field(default_factory=dict)
 
@@ -45,96 +60,116 @@ class ClaimRecord(BaseModel):
         return [item.strip() for item in str(value).split(";") if item.strip()]
 
 
-class UserHistory(BaseModel):
-    user_id: str
-    past_claim_count: int = 0
-    accept_claim: int = 0
-    manual_review_claim: int = 0
-    rejected_claim: int = 0
-    last_90_days_claim_count: int = 0
-    history_flags: str = "none"
-    history_summary: str = ""
+class UserHistory(StrictSchema):
+    user_id: StrictStr
+    past_claim_count: StrictInt = 0
+    accept_claim: StrictInt = 0
+    manual_review_claim: StrictInt = 0
+    rejected_claim: StrictInt = 0
+    last_90_days_claim_count: StrictInt = 0
+    history_flags: StrictStr = "none"
+    history_summary: StrictStr = ""
 
 
-class EvidenceRequirement(BaseModel):
-    requirement_id: str
-    claim_object: str
-    applies_to: str
-    minimum_image_evidence: str
+class EvidenceRequirement(StrictSchema):
+    requirement_id: StrictStr
+    claim_object: StrictStr
+    applies_to: StrictStr
+    minimum_image_evidence: StrictStr
 
 
-class ImageAnalysis(BaseModel):
-    image_path: str
-    image_id: str
-    exists: bool
-    readable: bool
-    width: int | None = None
-    height: int | None = None
-    blur_score: float | None = None
-    brightness: float | None = None
-    contrast: float | None = None
-    edge_density: float | None = None
-    perceptual_hash: str | None = None
-    notes: list[str] = Field(default_factory=list)
+class ImageAnalysis(StrictSchema):
+    image_path: StrictStr
+    image_id: StrictStr
+    exists: StrictBool
+    readable: StrictBool
+    width: StrictInt | None = None
+    height: StrictInt | None = None
+    blur_score: StrictFloat | None = None
+    brightness: StrictFloat | None = None
+    contrast: StrictFloat | None = None
+    edge_density: StrictFloat | None = None
+    perceptual_hash: StrictStr | None = None
+    notes: list[StrictStr] = Field(default_factory=list)
 
     @property
     def valid(self) -> bool:
         return self.exists and self.readable
 
 
-class VisionAnalysisResult(BaseModel):
+class ImageEvidenceResult(StrictSchema):
+    image_id: StrictStr
+    image_path: StrictStr
+    valid_image: StrictBool
+    visible_damage: StrictBool
+    issue_type: IssueType = IssueType.UNSPECIFIED
+    object_part: ObjectPart = ObjectPart.UNSPECIFIED
+    severity: Severity = Severity.UNKNOWN
+    quality_risks: list[ImageQualityRisk] = Field(default_factory=list)
+    reasoning: StrictStr
+
+
+class VisionAnalysisResult(StrictSchema):
     images: list[ImageAnalysis]
-    valid_image: bool
-    supporting_image_ids: list[str]
-    duplicate_image_ids: list[str] = Field(default_factory=list)
+    image_evidence: list[ImageEvidenceResult] = Field(default_factory=list)
+    valid_image: StrictBool
+    visible_damage: StrictBool = False
+    issue_type: IssueType = IssueType.UNSPECIFIED
+    object_part: ObjectPart = ObjectPart.UNSPECIFIED
+    severity: Severity = Severity.UNKNOWN
+    quality_risks: list[ImageQualityRisk] = Field(default_factory=list)
+    supporting_image_ids: list[StrictStr]
+    duplicate_image_ids: list[StrictStr] = Field(default_factory=list)
+    reasoning: StrictStr = ""
 
 
-class ClaimExtractionResult(BaseModel):
-    claim: ClaimRecord
-    issue_type: str
-    object_part: str
+class ClaimExtractionResult(StrictSchema):
+    claim: ClaimInput
+    issue_type: IssueType = IssueType.UNSPECIFIED
+    object_part: ObjectPart = ObjectPart.UNSPECIFIED
+    extracted_terms: list[StrictStr] = Field(default_factory=list)
 
 
-class EvidenceValidationResult(BaseModel):
-    evidence_standard_met: bool
-    evidence_standard_met_reason: str
-    matched_requirements: list[str] = Field(default_factory=list)
+class EvidenceValidationResult(StrictSchema):
+    evidence_standard_met: StrictBool
+    evidence_standard_met_reason: StrictStr
+    matched_requirements: list[StrictStr] = Field(default_factory=list)
 
 
-class RiskAssessmentResult(BaseModel):
-    risk_flags: list[str]
+class RiskAssessmentResult(StrictSchema):
+    risk_flags: list[RiskFlag | StrictStr]
     severity: Severity
 
 
-class ClaimDecision(BaseModel):
-    model_config = ConfigDict(use_enum_values=True)
-
+class FinalDecisionResult(StrictSchema):
     claim_status: ClaimStatus
-    claim_status_justification: str
+    claim_status_justification: StrictStr
 
 
-class FinalClaimOutput(BaseModel):
-    model_config = ConfigDict(use_enum_values=True)
-
-    user_id: str
-    image_paths: str
-    user_claim: str
-    claim_object: str
-    evidence_standard_met: bool
-    evidence_standard_met_reason: str
-    risk_flags: str
-    issue_type: str
-    object_part: str
-    claim_status: str
-    claim_status_justification: str
-    supporting_image_ids: str
-    valid_image: bool
-    severity: str
+class OutputRow(StrictSchema):
+    user_id: StrictStr
+    image_paths: StrictStr
+    user_claim: StrictStr
+    claim_object: StrictStr
+    evidence_standard_met: StrictBool
+    evidence_standard_met_reason: StrictStr
+    risk_flags: StrictStr
+    issue_type: StrictStr
+    object_part: StrictStr
+    claim_status: StrictStr
+    claim_status_justification: StrictStr
+    supporting_image_ids: StrictStr
+    valid_image: StrictBool
+    severity: StrictStr
 
     def to_row(self) -> dict[str, Any]:
         return {column: getattr(self, column) for column in OUTPUT_COLUMNS}
 
 
+ClaimRecord = ClaimInput
+ClaimDecision = FinalDecisionResult
+FinalClaimOutput = OutputRow
+
+
 def image_id_from_path(path: str) -> str:
     return Path(path).stem
-
