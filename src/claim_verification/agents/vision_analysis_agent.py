@@ -249,6 +249,13 @@ class VisionAnalysisAgent:
 
     @staticmethod
     def _aggregate_object_part(evidence: list[ImageEvidenceResult]) -> ObjectPart:
+        damage_values = [
+            ObjectPart(item.object_part)
+            for item in evidence
+            if item.visible_damage and item.object_part not in {ObjectPart.UNSPECIFIED, ObjectPart.UNKNOWN}
+        ]
+        if damage_values:
+            return Counter(damage_values).most_common(1)[0][0]
         values = [
             ObjectPart(item.object_part)
             for item in evidence

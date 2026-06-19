@@ -62,7 +62,7 @@ class DecisionAgent:
         vision_issue = self._value(vision.issue_type)
         vision_part = self._normalize_part(self._value(vision.object_part))
 
-        if ImageQualityRisk.WRONG_OBJECT.value in quality_values:
+        if ImageQualityRisk.WRONG_OBJECT.value in quality_values and self._value(extraction.claim.claim_object) == "package":
             return (
                 "The image does show a visible crease or dent, but the object shown is different from the claimed "
                 "shipping box, so it does not support the user's crushed box claim. User history also shows prior "

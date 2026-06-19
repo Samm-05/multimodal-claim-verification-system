@@ -12,7 +12,7 @@ class ClaimExtractionAgent:
         IssueType.DENT.value: ["dent", "dented", "deformation", "hail"],
         IssueType.CRACK.value: ["crack", "cracked"],
         IssueType.GLASS_SHATTER.value: ["shatter", "shattered"],
-        IssueType.BROKEN_PART.value: ["broken", "break", "smashed"],
+        IssueType.BROKEN_PART.value: ["broken", "break", "smashed", "damaged"],
         IssueType.MISSING_PART.value: ["missing", "lost"],
         IssueType.TORN_PACKAGING.value: ["torn", "tear", "ripped", "opened", "torn-open"],
         IssueType.CRUSHED_PACKAGING.value: ["crushed", "crush", "creased"],

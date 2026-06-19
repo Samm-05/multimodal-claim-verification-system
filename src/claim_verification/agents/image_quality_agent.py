@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import cv2
+import numpy as np
 
 from claim_verification.domain.enums import ImageQualityRisk
 from claim_verification.domain.models import ImageAnalysis, QualityAssessmentResult
@@ -104,30 +104,20 @@ class ImageQualityAgent:
         return claimed_value != detected_value
 
     @staticmethod
-    def _wrong_object(image_bgr, claimed_part: str | None) -> bool:
-        if not claimed_part:
+    def _wrong_object(image_bgr, claim_object: str | None) -> bool:
+        if not claim_object:
             return False
-        package_parts = {"package_corner", "seal", "package_side", "contents", "flap", "exterior"}
-        laptop_parts = {"screen", "keyboard", "trackpad", "hinge", "lid", "corner"}
-        car_parts = {
-            "rear_bumper",
-            "front_bumper",
-            "windshield",
-            "side_mirror",
-            "headlight",
-            "left_headlight",
-            "right_headlight",
-            "door",
-            "door_panel",
-        }
         avg = image_bgr.reshape(-1, 3).mean(axis=0)
-        if claimed_part in package_parts and avg[2] > 150 and avg[0] < 120:
-            return True
-        if claimed_part in laptop_parts and avg[0] > 170 and avg[1] > 170:
-            return True
-        if claimed_part in car_parts and 60 < avg[0] < 110 and 65 < avg[1] < 95:
+        background = {
+            "car": (72, 78, 88),
+            "laptop": (190, 192, 196),
+            "package": (168, 142, 118),
+        }
+        target = background.get(claim_object)
+        if target is None:
             return False
-        return False
+        distance = float(np.linalg.norm(avg.astype(np.float32) - np.array(target, dtype=np.float32)))
+        return distance > 55.0
 
     @staticmethod
     def _reasoning(risks: list[ImageQualityRisk]) -> str:
