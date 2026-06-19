@@ -4,47 +4,54 @@ Production-style Python pipeline for verifying car, laptop, and package damage c
 
 ## Architecture
 
-The app uses Clean Architecture with dependency injection:
+The app uses Clean Architecture with dependency injection and a six-agent workflow:
 
-- Claim Extraction Agent
-- Vision Analysis Agent
-- Evidence Validation Agent
-- Risk Assessment Agent
-- Decision Agent
+1. **Claim Extraction Agent** — parses customer conversation into issue type and object part
+2. **Vision Analysis Agent** — analyzes images for visible damage and supporting evidence
+3. **Image Quality Agent** — detects blur, wrong angle, wrong object, and related quality risks
+4. **Evidence Validation Agent** — checks images against `evidence_requirements.csv`
+5. **Risk Assessment Agent** — adds user-history and evidence risk flags (never overrides vision)
+6. **Decision Agent** — produces final `supported`, `contradicted`, or `not_enough_information`
 
-Infrastructure adapters handle CSV and image filesystem access. Domain logic is typed with Pydantic models and isolated from Pandas/OpenCV details.
+Images are the primary source of truth. User history provides risk context only.
 
 ## Data Layout
-
-Expected files:
 
 ```text
 data/claims/claims.csv
 data/claims/sample_claims.csv
 data/claims/user_history.csv
 data/claims/evidence_requirements.csv
-data/claims/images/sample/
-data/claims/images/test/
+data/image_specs/sample_cases.yaml
+images/sample/
+images/test/
 ```
 
-The current supplied zip includes CSVs. If images are absent, the system records invalid image evidence and explains the decision.
+Generate fixture images before the first run:
+
+```bash
+$env:PYTHONPATH="src"; python scripts/generate_images.py --dataset all
+```
 
 ## Run
 
+Process all claims and write `output.csv`:
+
 ```bash
-$env:PYTHONPATH="src"; python -m claim_verification.main
+$env:PYTHONPATH="src"; python -m claim_verification.main --input claims
 ```
 
-For evaluation on labeled sample data:
+Evaluate against labeled `sample_claims.csv`:
 
 ```bash
 $env:PYTHONPATH="src"; python -m claim_verification.main --input sample --evaluate
 ```
 
-Outputs are written to:
+Outputs:
 
 ```text
-outputs/predictions.csv
+output.csv
+evaluation/evaluation_report.md
 outputs/evaluation_report.json
 logs/app.log
 ```
@@ -66,4 +73,10 @@ claim_status_justification
 supporting_image_ids
 valid_image
 severity
+```
+
+## Tests
+
+```bash
+$env:PYTHONPATH="src"; pytest
 ```
