@@ -138,6 +138,7 @@ class EvidenceValidationResult(StrictSchema):
 
 class RiskAssessmentResult(StrictSchema):
     risk_flags: list[RiskFlag | StrictStr]
+    risk_score: StrictFloat = 0.0
     severity: Severity
 
 

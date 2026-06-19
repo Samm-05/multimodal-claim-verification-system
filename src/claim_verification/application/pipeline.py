@@ -47,7 +47,7 @@ class ClaimVerificationPipeline:
                 evidence,
                 user_history.get(claim.user_id),
             )
-            decision = self._decision_agent.decide(evidence, risk)
+            decision = self._decision_agent.decide(extraction, vision, evidence, risk)
             issue_type = self._prefer_specific(extraction.issue_type, vision.issue_type)
             object_part = self._prefer_specific(extraction.object_part, vision.object_part)
             outputs.append(

@@ -9,6 +9,8 @@ class ClaimObject(str, Enum):
 
 class ClaimStatus(str, Enum):
     SUPPORTED = "supported"
+    CONTRADICTED = "contradicted"
+    NOT_ENOUGH_INFORMATION = "not_enough_information"
     NEEDS_REVIEW = "needs_review"
     NOT_SUPPORTED = "not_supported"
 

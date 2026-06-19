@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from claim_verification.domain.enums import Severity
+import csv
+from pathlib import Path
+
+from claim_verification.domain.enums import RiskFlag, Severity
 from claim_verification.domain.models import (
     ClaimExtractionResult,
     EvidenceValidationResult,
@@ -11,34 +14,104 @@ from claim_verification.domain.models import (
 
 
 class RiskAssessmentAgent:
+    """Produce contextual risk without overriding the visual evidence result."""
+
+    def __init__(self, user_history: dict[str, UserHistory] | None = None) -> None:
+        self._user_history = user_history or {}
+
+    @classmethod
+    def from_csv(cls, path: Path) -> "RiskAssessmentAgent":
+        if not path.exists():
+            raise FileNotFoundError(f"User history CSV not found: {path}")
+        with path.open(newline="", encoding="utf-8-sig") as handle:
+            rows = list(csv.DictReader(handle))
+        histories: dict[str, UserHistory] = {}
+        for row in rows:
+            history = UserHistory(
+                user_id=str(row.get("user_id", "")).strip(),
+                past_claim_count=cls._int(row.get("past_claim_count")),
+                accept_claim=cls._int(row.get("accept_claim")),
+                manual_review_claim=cls._int(row.get("manual_review_claim")),
+                rejected_claim=cls._int(row.get("rejected_claim")),
+                last_90_days_claim_count=cls._int(row.get("last_90_days_claim_count")),
+                history_flags=str(row.get("history_flags", "none") or "none"),
+                history_summary=str(row.get("history_summary", "") or ""),
+            )
+            histories[history.user_id] = history
+        return cls(histories)
+
     def assess(
         self,
         extraction: ClaimExtractionResult,
         vision: VisionAnalysisResult,
         evidence: EvidenceValidationResult,
-        history: UserHistory | None,
+        history: UserHistory | None = None,
     ) -> RiskAssessmentResult:
+        resolved_history = history or self._user_history.get(extraction.claim.user_id)
         flags: list[str] = []
-        if history and history.history_flags and history.history_flags != "none":
-            flags.extend(self._split_flags(history.history_flags))
-        if history and history.last_90_days_claim_count >= 4:
-            flags.append("high_recent_claim_frequency")
-        if history and history.rejected_claim >= 2:
-            flags.append("prior_rejections")
-        if not vision.valid_image:
-            flags.append("missing_or_invalid_image")
-        if not evidence.evidence_standard_met:
-            flags.append("insufficient_evidence")
-        if vision.duplicate_image_ids:
-            flags.append("duplicate_images")
-        if extraction.issue_type == "unspecified" or extraction.object_part == "unspecified":
-            flags.append("ambiguous_claim_description")
+        score = 0.0
 
-        flags = self._dedupe(flags)
+        if resolved_history:
+            history_flags, history_score = self._history_risk(resolved_history)
+            flags.extend(history_flags)
+            score += history_score
+
+        evidence_flags, evidence_score = self._evidence_context_risk(extraction, vision, evidence)
+        flags.extend(evidence_flags)
+        score += evidence_score
+
+        flags = self._dedupe(flags) or [RiskFlag.NONE.value]
         return RiskAssessmentResult(
-            risk_flags=flags or ["none"],
-            severity=self._severity(extraction.issue_type, flags),
+            risk_flags=flags,
+            risk_score=round(min(score, 1.0), 3),
+            severity=self._severity(vision, score),
         )
+
+    def _history_risk(self, history: UserHistory) -> tuple[list[str], float]:
+        flags: list[str] = []
+        score = 0.0
+        if history.history_flags and history.history_flags != RiskFlag.NONE.value:
+            parsed_flags = self._split_flags(history.history_flags)
+            flags.extend(parsed_flags)
+            score += 0.2
+        if history.last_90_days_claim_count >= 4:
+            flags.append(RiskFlag.HIGH_RECENT_CLAIM_FREQUENCY.value)
+            score += 0.2
+        if history.rejected_claim >= 2:
+            flags.append(RiskFlag.PRIOR_REJECTIONS.value)
+            score += 0.25
+        if history.past_claim_count:
+            manual_review_rate = history.manual_review_claim / max(history.past_claim_count, 1)
+            rejected_rate = history.rejected_claim / max(history.past_claim_count, 1)
+            if manual_review_rate >= 0.35:
+                flags.append("high_manual_review_rate")
+                score += 0.15
+            if rejected_rate >= 0.35:
+                flags.append("high_rejection_rate")
+                score += 0.15
+        return flags, score
+
+    @staticmethod
+    def _evidence_context_risk(
+        extraction: ClaimExtractionResult,
+        vision: VisionAnalysisResult,
+        evidence: EvidenceValidationResult,
+    ) -> tuple[list[str], float]:
+        flags: list[str] = []
+        score = 0.0
+        if not vision.valid_image:
+            flags.append(RiskFlag.MISSING_OR_INVALID_IMAGE.value)
+            score += 0.3
+        if not evidence.evidence_standard_met:
+            flags.append(RiskFlag.INSUFFICIENT_EVIDENCE.value)
+            score += 0.2
+        if vision.duplicate_image_ids:
+            flags.append(RiskFlag.DUPLICATE_IMAGES.value)
+            score += 0.15
+        if str(extraction.issue_type) == "unspecified" or str(extraction.object_part) == "unspecified":
+            flags.append(RiskFlag.AMBIGUOUS_CLAIM_DESCRIPTION.value)
+            score += 0.1
+        return flags, score
 
     @staticmethod
     def _split_flags(value: str) -> list[str]:
@@ -55,12 +128,19 @@ class RiskAssessmentAgent:
         return result
 
     @staticmethod
-    def _severity(issue_type: str, flags: list[str]) -> Severity:
-        if "missing_or_invalid_image" in flags or "prior_rejections" in flags:
+    def _severity(vision: VisionAnalysisResult, risk_score: float) -> Severity:
+        visual_severity = str(vision.severity)
+        if visual_severity in {Severity.HIGH.value, Severity.MEDIUM.value, Severity.LOW.value}:
+            return Severity(visual_severity)
+        if risk_score >= 0.7:
             return Severity.HIGH
-        if issue_type in {"crack", "broken", "missing", "water_damage", "crushed"}:
+        if risk_score >= 0.35:
             return Severity.MEDIUM
-        if issue_type in {"scratch", "stain"}:
-            return Severity.LOW
-        return Severity.MEDIUM if flags else Severity.LOW
+        return Severity.LOW
 
+    @staticmethod
+    def _int(value: object) -> int:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return 0
