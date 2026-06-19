@@ -40,10 +40,15 @@ class ClaimExtractionAgent:
         ObjectPart.EXTERIOR.value: ["shipping box", "delivery box", "outside box"],
     }
 
+    PART_PRIORITY = {
+        "laptop": ["hinge area", "hinge", "keyboard", "trackpad", "screen", "laptop corner", "outer corner", "corner"],
+        "package": ["seal area", "seal", "package corner", "box corner", "contents", "package side", "shipping box", "delivery box"],
+    }
+
     def extract(self, claim: ClaimRecord) -> ClaimExtractionResult:
         text = self._normalize(self._customer_text(claim.user_claim))
         issue_type = self._match(text, self.ISSUE_PATTERNS, IssueType.UNSPECIFIED.value)
-        object_part = self._match(text, self.PART_PATTERNS, ObjectPart.UNSPECIFIED.value)
+        object_part = self._match_priority(text, str(claim.claim_object), self.PART_PATTERNS, ObjectPart.UNSPECIFIED.value)
         return ClaimExtractionResult(
             claim=claim,
             issue_type=issue_type,
@@ -63,6 +68,16 @@ class ClaimExtractionAgent:
     @staticmethod
     def _normalize(value: str) -> str:
         return re.sub(r"\s+", " ", value.lower())
+
+    @classmethod
+    def _match_priority(cls, text: str, claim_object: str, patterns: dict[str, list[str]], fallback: str) -> str:
+        priority_terms = cls.PART_PRIORITY.get(claim_object, [])
+        for term in priority_terms:
+            if term in text:
+                for label, terms in patterns.items():
+                    if term in terms:
+                        return label
+        return cls._match(text, patterns, fallback)
 
     @staticmethod
     def _match(text: str, patterns: dict[str, list[str]], fallback: str) -> str:
