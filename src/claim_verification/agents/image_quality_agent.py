@@ -70,8 +70,7 @@ class ImageQualityAgent:
             risks.append(ImageQualityRisk.CROPPED_OR_OBSTRUCTED)
 
         if claimed_part and detected_part and self._parts_conflict(claimed_part, detected_part):
-            if visible_damage or claim_object != "package":
-                risks.append(ImageQualityRisk.WRONG_ANGLE)
+            risks.append(ImageQualityRisk.WRONG_ANGLE)
 
         if claimed_part and detected_part and not visible_damage:
             risks.append(ImageQualityRisk.DAMAGE_NOT_VISIBLE)

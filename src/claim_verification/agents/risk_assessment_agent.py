@@ -75,8 +75,9 @@ class RiskAssessmentAgent:
         vision_part = self._normalize_part(self._value(vision.object_part))
 
         if self._claim_mismatch(claim_issue, vision_issue, claim_part, vision_part, vision.visible_damage):
-            flags.append(RiskFlag.CLAIM_MISMATCH.value)
-            score += 0.25
+            if not self._compatible_issues(claim_issue, vision_issue):
+                flags.append(RiskFlag.CLAIM_MISMATCH.value)
+                score += 0.25
 
         if resolved_history:
             history_flags, history_score = self._history_risk(resolved_history)
@@ -125,6 +126,14 @@ class RiskAssessmentAgent:
             flags.append(RiskFlag.PRIOR_REJECTIONS.value)
             score += 0.2
         return flags, score
+
+    @staticmethod
+    def _compatible_issues(claim_issue: str, vision_issue: str) -> bool:
+        pairs = {
+            (IssueType.CRACK.value, IssueType.GLASS_SHATTER.value),
+            (IssueType.GLASS_SHATTER.value, IssueType.CRACK.value),
+        }
+        return (claim_issue, vision_issue) in pairs
 
     @staticmethod
     def _claim_mismatch(

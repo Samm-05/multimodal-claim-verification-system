@@ -28,7 +28,7 @@ class ClaimExtractionAgent:
         ObjectPart.HEADLIGHT.value: ["headlight", "taillight"],
         ObjectPart.SIDE_MIRROR.value: ["side mirror", "mirror"],
         ObjectPart.DOOR.value: ["door panel", "door"],
-        ObjectPart.HINGE.value: ["hinge"],
+        ObjectPart.HINGE.value: ["hinge area", "hinge"],
         ObjectPart.SCREEN.value: ["screen", "display", "pantalla"],
         ObjectPart.PACKAGE_CORNER.value: ["package corner", "box corner", "corner"],
         ObjectPart.SEAL.value: ["seal", "tape", "seal area", "torn-open"],

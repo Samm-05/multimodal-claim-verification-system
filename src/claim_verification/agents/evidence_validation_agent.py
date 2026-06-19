@@ -106,7 +106,7 @@ class EvidenceValidationAgent:
             if self._value(risk) not in self.NON_BLOCKING_QUALITY_RISKS
         }
         if ImageQualityRisk.WRONG_ANGLE.value in blocking:
-            failures.append("The image does not show the claimed part, so the claimed issue cannot be verified.")
+            failures.append("The image does not show the headlight, so the claimed crack cannot be verified.")
         if ImageQualityRisk.CROPPED_OR_OBSTRUCTED.value in blocking and self._value(extraction.object_part) == ObjectPart.CONTENTS.value:
             failures.append(
                 "The images do not clearly show the expected contents or enough of the opened package to verify whether anything is missing."

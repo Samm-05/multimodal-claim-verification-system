@@ -70,7 +70,7 @@ class DecisionAgent:
             )
 
         if (
-            claim_issue in {IssueType.BROKEN_PART.value, IssueType.MISSING_PART.value}
+            claim_issue in {IssueType.BROKEN_PART.value, IssueType.MISSING_PART.value, IssueType.DENT.value}
             and vision_issue == IssueType.NONE.value
             and evidence.evidence_standard_met
         ):
@@ -79,10 +79,16 @@ class DecisionAgent:
                 "so it contradicts the user's physical damage claim."
             )
 
+        compatible_issues = {
+            (IssueType.CRACK.value, IssueType.GLASS_SHATTER.value),
+            (IssueType.GLASS_SHATTER.value, IssueType.CRACK.value),
+            (IssueType.DENT.value, IssueType.SCRATCH.value),
+        }
         if (
             claim_issue not in {IssueType.UNSPECIFIED.value, IssueType.UNKNOWN.value}
             and vision_issue not in {IssueType.UNSPECIFIED.value, IssueType.UNKNOWN.value, IssueType.NONE.value}
             and claim_issue != vision_issue
+            and (claim_issue, vision_issue) not in compatible_issues
             and evidence.evidence_standard_met
         ):
             if claim_issue == IssueType.DENT.value and vision_issue == IssueType.SCRATCH.value:
