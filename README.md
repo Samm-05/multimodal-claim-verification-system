@@ -32,13 +32,13 @@ The current supplied zip includes CSVs. If images are absent, the system records
 ## Run
 
 ```bash
-python -m src.claim_verification.main
+$env:PYTHONPATH="src"; python -m claim_verification.main
 ```
 
 For evaluation on labeled sample data:
 
 ```bash
-python -m src.claim_verification.main --input sample --evaluate
+$env:PYTHONPATH="src"; python -m claim_verification.main --input sample --evaluate
 ```
 
 Outputs are written to:
@@ -67,4 +67,3 @@ supporting_image_ids
 valid_image
 severity
 ```
-

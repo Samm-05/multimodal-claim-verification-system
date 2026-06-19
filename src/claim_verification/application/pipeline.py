@@ -53,17 +53,17 @@ class ClaimVerificationPipeline:
                     user_id=claim.user_id,
                     image_paths=";".join(claim.image_paths),
                     user_claim=claim.user_claim,
-                    claim_object=str(claim.claim_object),
+                    claim_object=self._value(claim.claim_object),
                     evidence_standard_met=evidence.evidence_standard_met,
                     evidence_standard_met_reason=evidence.evidence_standard_met_reason,
                     risk_flags=";".join(risk.risk_flags),
                     issue_type=extraction.issue_type,
                     object_part=extraction.object_part,
-                    claim_status=str(decision.claim_status),
+                    claim_status=self._value(decision.claim_status),
                     claim_status_justification=decision.claim_status_justification,
                     supporting_image_ids=";".join(vision.supporting_image_ids),
                     valid_image=vision.valid_image,
-                    severity=str(risk.severity),
+                    severity=self._value(risk.severity),
                 )
             )
         return outputs
@@ -72,3 +72,6 @@ class ClaimVerificationPipeline:
     def output_columns() -> list[str]:
         return OUTPUT_COLUMNS.copy()
 
+    @staticmethod
+    def _value(value: object) -> str:
+        return str(getattr(value, "value", value))

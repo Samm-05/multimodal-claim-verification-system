@@ -10,3 +10,4 @@ pyyaml
 imagehash
 exifread
 tqdm
+pytest
