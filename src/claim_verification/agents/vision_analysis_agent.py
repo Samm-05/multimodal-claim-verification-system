@@ -149,7 +149,7 @@ class VisionAnalysisAgent:
             claimed_part=claimed_part,
             detected_part=detected_part,
             visible_damage=visible_damage,
-            claim_object=self._value(claim.claim_object),
+            claim_object=str(getattr(claim.claim_object, "value", claim.claim_object)),
         )
 
         object_part = self._normalize_part(detected_part)
