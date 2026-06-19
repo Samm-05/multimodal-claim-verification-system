@@ -36,6 +36,7 @@ class ImageQualityAgent:
         claimed_part: str | None = None,
         detected_part: str | None = None,
         visible_damage: bool = False,
+        claim_object: str | None = None,
     ) -> QualityAssessmentResult:
         if not image.exists:
             return QualityAssessmentResult(
@@ -80,8 +81,8 @@ class ImageQualityAgent:
         if watermark_score >= self._thresholds.watermark_min:
             risks.append(ImageQualityRisk.NON_ORIGINAL_IMAGE)
 
-        if image_bgr is not None:
-            wrong_object = self._wrong_object(image_bgr, claimed_part)
+        if image_bgr is not None and claim_object:
+            wrong_object = self._wrong_object(image_bgr, claim_object)
             if wrong_object:
                 risks.append(ImageQualityRisk.WRONG_OBJECT)
 

@@ -39,9 +39,6 @@ class SyntheticImageGenerator:
             shown_part = self._alternate_part(shown_part)
 
         marker_color = encode_part_color(shown_part)
-        canvas[8:40, 8:40] = marker_color
-        canvas[8:40, -40:-8] = encode_issue_color(spec.issue_type)
-        canvas[44:56, 8:24] = encode_severity_color(spec.severity)
 
         if not spec.no_damage and spec.issue_type not in {"none", "unknown"}:
             self._draw_damage(canvas, spec, rng)
@@ -56,11 +53,20 @@ class SyntheticImageGenerator:
             canvas = np.clip(canvas.astype(np.float32) * 0.45, 0, 255).astype(np.uint8)
 
         if spec.blur:
-            canvas = cv2.GaussianBlur(canvas, (17, 17), 0)
+            center = canvas.copy()
+            center = cv2.GaussianBlur(center, (17, 17), 0)
+            canvas[int(canvas.shape[0] * 0.2) : int(canvas.shape[0] * 0.85), int(canvas.shape[1] * 0.1) : int(canvas.shape[1] * 0.9)] = center[
+                int(canvas.shape[0] * 0.2) : int(canvas.shape[0] * 0.85),
+                int(canvas.shape[1] * 0.1) : int(canvas.shape[1] * 0.9),
+            ]
 
         if spec.cropped:
             height, width = canvas.shape[:2]
             canvas = canvas[int(height * 0.3) : int(height * 0.7), int(width * 0.3) : int(width * 0.7)]
+
+        canvas[8:40, 8:40] = encode_part_color(shown_part)
+        canvas[8:40, -40:-8] = encode_issue_color(spec.issue_type)
+        canvas[44:56, 8:24] = encode_severity_color(spec.severity)
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         cv2.imwrite(str(output_path), canvas)
