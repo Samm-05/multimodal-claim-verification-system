@@ -1,0 +1,12 @@
+pandas
+numpy
+opencv-python
+pillow
+scikit-learn
+pydantic
+loguru
+python-dotenv
+pyyaml
+imagehash
+exifread
+tqdm
