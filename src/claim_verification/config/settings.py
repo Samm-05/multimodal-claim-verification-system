@@ -14,6 +14,7 @@ class Settings:
     evidence_requirements_path: Path
     output_path: Path
     evaluation_path: Path
+    evaluation_markdown_path: Path
     log_path: Path
 
     @classmethod
@@ -28,6 +29,6 @@ class Settings:
             evidence_requirements_path=data_dir / "evidence_requirements.csv",
             output_path=project_root / "outputs" / "predictions.csv",
             evaluation_path=project_root / "outputs" / "evaluation_report.json",
+            evaluation_markdown_path=project_root / "outputs" / "evaluation_report.md",
             log_path=project_root / "logs" / "app.log",
         )
-

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from claim_verification.application.factory import build_pipeline
+from claim_verification.application.factory import build_claim_pipeline
 from claim_verification.config.settings import Settings
 from claim_verification.domain.models import OUTPUT_COLUMNS
 from claim_verification.evaluation.evaluator import Evaluator
@@ -20,6 +20,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input", choices=["claims", "sample"], default="claims")
     parser.add_argument("--output", type=Path, default=None)
     parser.add_argument("--evaluate", action="store_true")
+    parser.add_argument("--max-retries", type=int, default=2)
     return parser.parse_args()
 
 
@@ -36,21 +37,24 @@ def main() -> None:
     claims = repository.load_claims(claims_path)
     history = repository.load_user_history(settings.user_history_path)
     requirements = repository.load_evidence_requirements(settings.evidence_requirements_path)
-    pipeline = build_pipeline(
+    pipeline = build_claim_pipeline(
         image_repository=LocalImageRepository(project_root),
         requirements=requirements,
+        csv_repository=repository,
+        max_retries=args.max_retries,
     )
-    outputs = pipeline.process(claims, history)
-    repository.write_rows([output.to_row() for output in outputs], output_path, OUTPUT_COLUMNS)
+    run_result = pipeline.run(claims, history, output_path)
+    outputs = run_result.outputs
 
     if args.evaluate:
         predictions = pd.DataFrame([output.to_row() for output in outputs], columns=OUTPUT_COLUMNS)
         labels = pd.read_csv(settings.sample_claims_path)
-        report = Evaluator().evaluate(predictions, labels)
+        evaluator = Evaluator()
+        report = evaluator.evaluate(predictions, labels, run_result.summary)
         settings.evaluation_path.parent.mkdir(parents=True, exist_ok=True)
         settings.evaluation_path.write_text(json.dumps(report.to_dict(), indent=2), encoding="utf-8")
+        evaluator.write_markdown_report(report, settings.evaluation_markdown_path)
 
 
 if __name__ == "__main__":
     main()
-
