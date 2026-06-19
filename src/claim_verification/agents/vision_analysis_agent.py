@@ -45,7 +45,7 @@ class VisionAnalysisAgent:
         self._thresholds = thresholds or VisionThresholds()
 
     def analyze(self, claim: ClaimInput) -> VisionAnalysisResult:
-        claimed_part = self._claimed_part(claim.user_claim)
+        claimed_part = self._claimed_part(self._customer_text(claim.user_claim))
         images = [
             self._extractor.analyze(image_path, self._image_repository.resolve(image_path))
             for image_path in claim.image_paths
@@ -171,6 +171,15 @@ class VisionAnalysisAgent:
         )
 
     @staticmethod
+    def _customer_text(value: str) -> str:
+        segments = []
+        for part in re.split(r"\||\n", value):
+            cleaned = part.strip()
+            if cleaned.lower().startswith("customer:"):
+                segments.append(cleaned.split(":", 1)[1].strip())
+        return " ".join(segments) if segments else value
+
+    @staticmethod
     def _claimed_part(claim_text: str) -> str:
         normalized = re.sub(r"\s+", " ", claim_text.lower())
         parts = [
@@ -190,7 +199,7 @@ class VisionAnalysisAgent:
             ("corner", "corner"),
             ("seal", "seal"),
             ("contents", "contents"),
-            ("package", "package_side"),
+            ("hood", "front_bumper"),
         ]
         best = "unspecified"
         best_position = -1

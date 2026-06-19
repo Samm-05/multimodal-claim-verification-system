@@ -22,7 +22,7 @@ class ClaimExtractionAgent:
     PART_PATTERNS = {
         ObjectPart.WINDSHIELD.value: ["windshield", "front glass"],
         ObjectPart.REAR_BUMPER.value: ["rear bumper", "back bumper", "back of the car"],
-        ObjectPart.FRONT_BUMPER.value: ["front bumper", "front side"],
+        ObjectPart.FRONT_BUMPER.value: ["front bumper", "front side", "hood"],
         ObjectPart.LEFT_HEADLIGHT.value: ["left headlight"],
         ObjectPart.RIGHT_HEADLIGHT.value: ["right headlight"],
         ObjectPart.HEADLIGHT.value: ["headlight", "taillight"],
@@ -37,8 +37,7 @@ class ClaimExtractionAgent:
         ObjectPart.SEAL.value: ["seal", "tape"],
         ObjectPart.PACKAGE_SIDE.value: ["package surface", "package side", "outside"],
         ObjectPart.CONTENTS.value: ["contents", "inside", "item inside", "product inside"],
-        ObjectPart.EXTERIOR.value: ["shipping box", "delivery box"],
-        "hood": ["hood"],
+        ObjectPart.EXTERIOR.value: ["shipping box", "delivery box", "box", "package"],
     }
 
     def extract(self, claim: ClaimRecord) -> ClaimExtractionResult:
