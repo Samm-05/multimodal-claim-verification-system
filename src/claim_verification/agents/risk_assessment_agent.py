@@ -13,6 +13,9 @@ from claim_verification.domain.models import (
 )
 
 
+class RiskAssessmentAgent:
+    """Produce contextual risk flags without overriding visual evidence conclusions."""
+
     OUTPUT_FLAGS = {
         RiskFlag.BLURRY_IMAGE.value,
         RiskFlag.WRONG_ANGLE.value,
@@ -25,7 +28,6 @@ from claim_verification.domain.models import (
         RiskFlag.USER_HISTORY_RISK.value,
         RiskFlag.MANUAL_REVIEW_REQUIRED.value,
     }
-    """Produce contextual risk flags without overriding visual evidence conclusions."""
 
     def __init__(self, user_history: dict[str, UserHistory] | None = None) -> None:
         self._user_history = user_history or {}
