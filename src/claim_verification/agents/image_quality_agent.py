@@ -70,7 +70,8 @@ class ImageQualityAgent:
             risks.append(ImageQualityRisk.CROPPED_OR_OBSTRUCTED)
 
         if claimed_part and detected_part and self._parts_conflict(claimed_part, detected_part):
-            risks.append(ImageQualityRisk.WRONG_ANGLE)
+            if visible_damage or claim_object != "package":
+                risks.append(ImageQualityRisk.WRONG_ANGLE)
 
         if claimed_part and detected_part and not visible_damage:
             risks.append(ImageQualityRisk.DAMAGE_NOT_VISIBLE)
@@ -97,8 +98,13 @@ class ImageQualityAgent:
 
     @staticmethod
     def _parts_conflict(claimed: str, detected: str) -> bool:
-        claimed_value = claimed.replace("door_panel", "door")
-        detected_value = detected.replace("door_panel", "door")
+        aliases = {
+            "door_panel": "door",
+            "corner": "package_corner",
+            "package_corner": "corner",
+        }
+        claimed_value = aliases.get(claimed, claimed)
+        detected_value = aliases.get(detected, detected)
         if claimed_value in {"unknown", "unspecified"} or detected_value in {"unknown", "unspecified"}:
             return False
         return claimed_value != detected_value

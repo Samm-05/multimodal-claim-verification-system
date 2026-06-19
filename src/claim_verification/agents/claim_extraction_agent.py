@@ -8,8 +8,8 @@ from claim_verification.domain.models import ClaimExtractionResult, ClaimRecord
 
 class ClaimExtractionAgent:
     ISSUE_PATTERNS = {
-        IssueType.SCRATCH.value: ["scratch", "scrape", "scuff", "mark", "scratched"],
         IssueType.DENT.value: ["dent", "dented", "deformation", "hail"],
+        IssueType.SCRATCH.value: ["scratch", "scrape", "scuff", "mark", "scratched"],
         IssueType.CRACK.value: ["crack", "cracked"],
         IssueType.GLASS_SHATTER.value: ["shatter", "shattered"],
         IssueType.BROKEN_PART.value: ["broken", "break", "smashed", "damaged"],
@@ -28,16 +28,16 @@ class ClaimExtractionAgent:
         ObjectPart.HEADLIGHT.value: ["headlight", "taillight"],
         ObjectPart.SIDE_MIRROR.value: ["side mirror", "mirror"],
         ObjectPart.DOOR.value: ["door panel", "door"],
+        ObjectPart.HINGE.value: ["hinge"],
         ObjectPart.SCREEN.value: ["screen", "display", "pantalla"],
+        ObjectPart.PACKAGE_CORNER.value: ["package corner", "box corner", "corner"],
+        ObjectPart.SEAL.value: ["seal", "tape", "seal area", "torn-open"],
+        ObjectPart.CORNER.value: ["laptop corner", "outer corner"],
         ObjectPart.KEYBOARD.value: ["keyboard", "key", "keys"],
         ObjectPart.TRACKPAD.value: ["trackpad", "touchpad"],
-        ObjectPart.HINGE.value: ["hinge"],
-        ObjectPart.CORNER.value: ["corner"],
-        ObjectPart.PACKAGE_CORNER.value: ["package corner", "box corner"],
-        ObjectPart.SEAL.value: ["seal", "tape"],
-        ObjectPart.PACKAGE_SIDE.value: ["package surface", "package side", "outside"],
-        ObjectPart.CONTENTS.value: ["contents", "inside", "item inside", "product inside"],
-        ObjectPart.EXTERIOR.value: ["shipping box", "delivery box", "box", "package"],
+        ObjectPart.PACKAGE_SIDE.value: ["package surface", "package side", "wet-looking stain"],
+        ObjectPart.CONTENTS.value: ["contents", "inside", "item inside", "product inside", "missing"],
+        ObjectPart.EXTERIOR.value: ["shipping box", "delivery box", "outside box"],
     }
 
     def extract(self, claim: ClaimRecord) -> ClaimExtractionResult:

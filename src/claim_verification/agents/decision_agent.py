@@ -20,7 +20,9 @@ class DecisionAgent:
         evidence: EvidenceValidationResult,
         risk: RiskAssessmentResult,
     ) -> ClaimDecision:
-        if not vision.valid_image and not evidence.evidence_standard_met:
+        if not vision.valid_image and not evidence.evidence_standard_met and not any(
+            item.exists and item.readable for item in vision.image_evidence
+        ):
             return ClaimDecision(
                 claim_status=ClaimStatus.NOT_ENOUGH_INFORMATION,
                 claim_status_justification=self._not_enough_information_reason(extraction, vision, evidence),

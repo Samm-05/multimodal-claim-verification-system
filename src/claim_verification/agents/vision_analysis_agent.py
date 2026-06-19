@@ -230,6 +230,7 @@ class VisionAnalysisAgent:
         aliases = {
             "door_panel": ObjectPart.DOOR,
             "glass": ObjectPart.SCREEN,
+            "package_corner": ObjectPart.PACKAGE_CORNER,
         }
         if part in aliases:
             return aliases[part]
@@ -240,12 +241,16 @@ class VisionAnalysisAgent:
 
     @staticmethod
     def _aggregate_issue_type(evidence: list[ImageEvidenceResult]) -> IssueType:
-        values = [IssueType(item.issue_type) for item in evidence if item.issue_type not in {IssueType.UNSPECIFIED, IssueType.UNKNOWN}]
-        if not values:
-            if any(item.visible_damage for item in evidence):
-                return IssueType.UNKNOWN
-            return IssueType.NONE
-        return Counter(values).most_common(1)[0][0]
+        values = [
+            IssueType(item.issue_type)
+            for item in evidence
+            if item.issue_type not in {IssueType.UNSPECIFIED, IssueType.UNKNOWN, IssueType.NONE}
+        ]
+        if values:
+            return Counter(values).most_common(1)[0][0]
+        if any(item.visible_damage for item in evidence):
+            return IssueType.UNKNOWN
+        return IssueType.NONE
 
     @staticmethod
     def _aggregate_object_part(evidence: list[ImageEvidenceResult]) -> ObjectPart:

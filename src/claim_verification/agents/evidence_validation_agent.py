@@ -18,6 +18,9 @@ class EvidenceValidationAgent:
     NON_BLOCKING_QUALITY_RISKS = {
         ImageQualityRisk.BLURRY_IMAGE.value,
         ImageQualityRisk.TEXT_INSTRUCTION_PRESENT.value,
+        ImageQualityRisk.NON_ORIGINAL_IMAGE.value,
+        ImageQualityRisk.DAMAGE_NOT_VISIBLE.value,
+        ImageQualityRisk.LOW_LIGHT_OR_GLARE.value,
     }
 
     def __init__(self, requirements: list[EvidenceRequirement]) -> None:
@@ -68,7 +71,7 @@ class EvidenceValidationAgent:
             evidence_standard_met=True,
             evidence_standard_met_reason=(
                 f"The {self._value(vision.object_part).replace('_', ' ')} is visible and the "
-                f"{self._value(vision.issue_type).replace('_', ' ')} can be verified from the submitted image(s). "
+                f"{self._describe_issue(vision)} can be verified from the submitted image(s). "
                 f"Matched {requirement_ids}. Supporting image id(s): {supporting}."
             ),
             matched_requirements=[item.requirement_id for item in matched],
@@ -84,18 +87,12 @@ class EvidenceValidationAgent:
         if not extraction.claim.image_paths:
             failures.append("No image paths were submitted with the claim.")
             return failures
-        if not vision.valid_image:
-            if any(ImageQualityRisk.WRONG_ANGLE.value in self._value(risk) for risk in vision.quality_risks):
-                failures.append("The image does not show the claimed part, so the claimed issue cannot be verified.")
-            elif any(ImageQualityRisk.CROPPED_OR_OBSTRUCTED.value in self._value(risk) for risk in vision.quality_risks):
-                failures.append(
-                    "The images do not clearly show the expected contents or enough of the opened package to verify whether anything is missing."
-                )
-            else:
-                failures.append("No submitted image could be found and decoded for visual verification.")
+
+        readable_images = [item for item in vision.image_evidence if item.exists and item.readable]
+        if not readable_images:
+            failures.append("No submitted image could be found and decoded for visual verification.")
             return failures
-        if not vision.supporting_image_ids:
-            failures.append("No image provided enough support to satisfy the visual evidence requirement.")
+
         if not matched:
             failures.append("No configured evidence requirement matched the claim object, issue, or part.")
 
@@ -106,23 +103,30 @@ class EvidenceValidationAgent:
         }
         if ImageQualityRisk.WRONG_ANGLE.value in blocking:
             failures.append("The image does not show the claimed part, so the claimed issue cannot be verified.")
-        if ImageQualityRisk.DAMAGE_NOT_VISIBLE.value in blocking and not vision.visible_damage:
-            failures.append("Readable images did not provide a reliable visible damage signal.")
         if ImageQualityRisk.CROPPED_OR_OBSTRUCTED.value in blocking and self._value(extraction.object_part) == ObjectPart.CONTENTS.value:
             failures.append(
                 "The images do not clearly show the expected contents or enough of the opened package to verify whether anything is missing."
             )
+        if ImageQualityRisk.WRONG_OBJECT.value in blocking:
+            failures.append("The submitted image is sufficient to see that the visible damage does not match the claimed object.")
 
         claim_part = self._normalize_part(self._value(extraction.object_part))
-        vision_part = self._normalize_part(self._value(vision.object_part))
         if (
-            claim_part not in {ObjectPart.UNSPECIFIED.value, ObjectPart.UNKNOWN.value}
-            and vision_part not in {ObjectPart.UNSPECIFIED.value, ObjectPart.UNKNOWN.value}
-            and ImageQualityRisk.WRONG_ANGLE.value in blocking
+            claim_part == ObjectPart.CONTENTS.value
+            and not vision.visible_damage
+            and ImageQualityRisk.CROPPED_OR_OBSTRUCTED.value in blocking
         ):
-            failures.append(f"The image does not show the {claim_part.replace('_', ' ')}, so the claimed issue cannot be verified.")
+            failures.append(
+                "The images do not clearly show the expected contents or enough of the opened package to verify whether anything is missing."
+            )
 
         return failures
+
+    def _describe_issue(self, vision: VisionAnalysisResult) -> str:
+        issue = self._value(vision.issue_type)
+        if issue in {IssueType.NONE.value, IssueType.UNKNOWN.value, IssueType.UNSPECIFIED.value}:
+            return "package condition"
+        return issue.replace("_", " ")
 
     def _match_requirements(
         self,
@@ -153,7 +157,11 @@ class EvidenceValidationAgent:
 
     @staticmethod
     def _normalize_part(value: str) -> str:
-        return "door" if value == "door_panel" else value
+        aliases = {
+            "door_panel": "door",
+            "corner": "package_corner",
+        }
+        return aliases.get(value, value)
 
     @staticmethod
     def _value(value: object) -> str:
