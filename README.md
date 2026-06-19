@@ -474,8 +474,6 @@ Included:
 
 **Samyak Mahatme**
 
-Machine Learning Engineer | AI Developer | Computer Vision Enthusiast
-
 ---
 
 ## ⭐ Project Highlights
