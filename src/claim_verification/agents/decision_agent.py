@@ -69,7 +69,11 @@ class DecisionAgent:
                 "severity exaggeration."
             )
 
-        if claim_issue not in {IssueType.UNSPECIFIED.value, IssueType.UNKNOWN.value} and vision_issue == IssueType.NONE.value:
+        if (
+            claim_issue in {IssueType.BROKEN_PART.value, IssueType.MISSING_PART.value}
+            and vision_issue == IssueType.NONE.value
+            and evidence.evidence_standard_met
+        ):
             return (
                 f"The image shows the {claim_part.replace('_', ' ')} but does not show clear physical damage, "
                 "so it contradicts the user's physical damage claim."
