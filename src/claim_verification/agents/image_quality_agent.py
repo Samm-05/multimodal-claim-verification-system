@@ -17,8 +17,8 @@ class QualityThresholds:
     min_width: int = 320
     min_height: int = 240
     cropped_edge_density: float = 0.005
-    text_overlay_min: float = 0.02
-    watermark_min: float = 0.03
+    text_overlay_min: float = 0.04
+    watermark_min: float = 0.08
 
 
 class ImageQualityAgent:

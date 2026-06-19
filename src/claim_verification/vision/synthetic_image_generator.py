@@ -137,7 +137,7 @@ class SyntheticImageGenerator:
     def _draw_watermark(canvas: np.ndarray) -> None:
         height, width = canvas.shape[:2]
         for index in range(0, 48, 6):
-            cv2.line(canvas, (width - 48 + index, 0), (width - 8, 40 - index), (210, 210, 210), 1)
+            cv2.line(canvas, (width - 48 + index, height - 48), (width - 8, height - 8 - index), (210, 210, 210), 1)
 
     @staticmethod
     def _draw_instruction_text(canvas: np.ndarray) -> None:

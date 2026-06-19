@@ -71,7 +71,13 @@ class VisionAnalysisAgent:
             ]
 
         valid_image = any(item.valid_image for item in evidence)
-        if any(ImageQualityRisk.NON_ORIGINAL_IMAGE in item.quality_risks for item in evidence):
+        if any(
+            item.valid_image and ImageQualityRisk.NON_ORIGINAL_IMAGE in item.quality_risks
+            for item in evidence
+        ) and not any(
+            item.valid_image and ImageQualityRisk.NON_ORIGINAL_IMAGE not in item.quality_risks
+            for item in evidence
+        ):
             valid_image = False
         if all(
             ImageQualityRisk.CROPPED_OR_OBSTRUCTED in item.quality_risks

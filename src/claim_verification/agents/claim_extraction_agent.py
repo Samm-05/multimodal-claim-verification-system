@@ -25,7 +25,7 @@ class ClaimExtractionAgent:
         ObjectPart.FRONT_BUMPER.value: ["front bumper", "front side"],
         ObjectPart.LEFT_HEADLIGHT.value: ["left headlight"],
         ObjectPart.RIGHT_HEADLIGHT.value: ["right headlight"],
-        ObjectPart.HEADLIGHT.value: ["headlight", "taillight", "light"],
+        ObjectPart.HEADLIGHT.value: ["headlight", "taillight"],
         ObjectPart.SIDE_MIRROR.value: ["side mirror", "mirror"],
         ObjectPart.DOOR.value: ["door panel", "door"],
         ObjectPart.SCREEN.value: ["screen", "display", "pantalla"],
@@ -37,11 +37,12 @@ class ClaimExtractionAgent:
         ObjectPart.SEAL.value: ["seal", "tape"],
         ObjectPart.PACKAGE_SIDE.value: ["package surface", "package side", "outside"],
         ObjectPart.CONTENTS.value: ["contents", "inside", "item inside", "product inside"],
-        ObjectPart.EXTERIOR.value: ["shipping box", "delivery box", "box", "package"],
+        ObjectPart.EXTERIOR.value: ["shipping box", "delivery box"],
+        "hood": ["hood"],
     }
 
     def extract(self, claim: ClaimRecord) -> ClaimExtractionResult:
-        text = self._normalize(claim.user_claim)
+        text = self._normalize(self._customer_text(claim.user_claim))
         issue_type = self._match(text, self.ISSUE_PATTERNS, IssueType.UNSPECIFIED.value)
         object_part = self._match(text, self.PART_PATTERNS, ObjectPart.UNSPECIFIED.value)
         return ClaimExtractionResult(
@@ -50,6 +51,15 @@ class ClaimExtractionAgent:
             object_part=object_part,
             extracted_terms=self._extract_terms(text),
         )
+
+    @staticmethod
+    def _customer_text(value: str) -> str:
+        segments = []
+        for part in re.split(r"\||\n", value):
+            cleaned = part.strip()
+            if cleaned.lower().startswith("customer:"):
+                segments.append(cleaned.split(":", 1)[1].strip())
+        return " ".join(segments) if segments else value
 
     @staticmethod
     def _normalize(value: str) -> str:

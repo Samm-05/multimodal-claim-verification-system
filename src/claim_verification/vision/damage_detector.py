@@ -166,8 +166,10 @@ class DamageDetector:
 
     @staticmethod
     def _watermark_score(image_bgr: np.ndarray) -> float:
-        width = image_bgr.shape[1]
-        corner = image_bgr[0:48, width - 48 : width] if width >= 48 else image_bgr
+        height, width = image_bgr.shape[:2]
+        if width < 48 or height < 48:
+            return 0.0
+        corner = image_bgr[height - 48 : height, width - 48 : width]
         gray = cv2.cvtColor(corner, cv2.COLOR_BGR2GRAY)
         edges = cv2.Canny(gray, 60, 140)
         return float(np.count_nonzero(edges) / edges.size)
