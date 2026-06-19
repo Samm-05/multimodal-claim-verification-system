@@ -4,6 +4,7 @@ from claim_verification.agents.claim_extraction_agent import ClaimExtractionAgen
 from claim_verification.agents.decision_agent import DecisionAgent
 from claim_verification.agents.evidence_validation_agent import EvidenceValidationAgent
 from claim_verification.agents.risk_assessment_agent import RiskAssessmentAgent
+from claim_verification.agents.image_quality_agent import ImageQualityAgent
 from claim_verification.agents.vision_analysis_agent import VisionAnalysisAgent
 from claim_verification.application.claim_pipeline import ClaimPipeline
 from claim_verification.application.pipeline import ClaimVerificationPipeline
@@ -22,6 +23,7 @@ def build_pipeline(
         vision_analysis_agent=VisionAnalysisAgent(
             image_repository=image_repository,
             extractor=ImageFeatureExtractor(),
+            quality_agent=ImageQualityAgent(),
         ),
         evidence_validation_agent=EvidenceValidationAgent(requirements),
         risk_assessment_agent=RiskAssessmentAgent(),
@@ -40,6 +42,7 @@ def build_claim_pipeline(
         vision_analysis_agent=VisionAnalysisAgent(
             image_repository=image_repository,
             extractor=ImageFeatureExtractor(),
+            quality_agent=ImageQualityAgent(),
         ),
         evidence_validation_agent=EvidenceValidationAgent(requirements),
         risk_assessment_agent=RiskAssessmentAgent(),

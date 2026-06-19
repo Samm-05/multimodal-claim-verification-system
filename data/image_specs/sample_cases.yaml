@@ -1,0 +1,89 @@
+case_001:
+  object_type: car
+  images:
+    img_1.jpg: {object_part: rear_bumper, issue_type: dent, severity: medium}
+case_002:
+  object_type: car
+  images:
+    img_1.jpg: {object_part: front_bumper, issue_type: scratch, severity: low}
+    img_2.jpg: {object_part: front_bumper, issue_type: none, severity: none}
+case_003:
+  object_type: car
+  images:
+    img_1.jpg: {object_part: windshield, issue_type: crack, severity: medium}
+    img_2.jpg: {object_part: windshield, issue_type: none, severity: none}
+case_004:
+  object_type: car
+  images:
+    img_1.jpg: {object_part: side_mirror, issue_type: broken_part, severity: medium}
+case_005:
+  object_type: car
+  images:
+    img_1.jpg: {object_part: rear_bumper, issue_type: scratch, severity: low}
+    img_2.jpg: {object_part: rear_bumper, issue_type: none, severity: none}
+case_006:
+  object_type: car
+  images:
+    img_1.jpg: {object_part: door, issue_type: none, severity: none, wrong_angle: true}
+case_007:
+  object_type: car
+  images:
+    img_1.jpg: {object_part: door, issue_type: dent, severity: medium, blur: true}
+    img_2.jpg: {object_part: door, issue_type: dent, severity: medium}
+case_008:
+  object_type: car
+  images:
+    img_1.jpg: {object_part: front_bumper, issue_type: broken_part, severity: high, non_original: true}
+case_009:
+  object_type: laptop
+  images:
+    img_1.jpg: {object_part: screen, issue_type: crack, severity: medium}
+case_010:
+  object_type: laptop
+  images:
+    img_1.jpg: {object_part: hinge, issue_type: broken_part, severity: medium}
+    img_2.jpg: {object_part: hinge, issue_type: none, severity: none}
+case_011:
+  object_type: laptop
+  images:
+    img_1.jpg: {object_part: keyboard, issue_type: stain, severity: medium}
+case_012:
+  object_type: laptop
+  images:
+    img_1.jpg: {object_part: corner, issue_type: none, severity: none}
+    img_2.jpg: {object_part: corner, issue_type: dent, severity: low}
+case_013:
+  object_type: laptop
+  images:
+    img_1.jpg: {object_part: screen, issue_type: crack, severity: medium}
+case_014:
+  object_type: laptop
+  images:
+    img_1.jpg: {object_part: trackpad, issue_type: none, severity: none, no_damage: true}
+case_015:
+  object_type: package
+  images:
+    img_1.jpg: {object_part: package_corner, issue_type: crushed_packaging, severity: medium}
+case_016:
+  object_type: package
+  images:
+    img_1.jpg: {object_part: seal, issue_type: torn_packaging, severity: medium}
+    img_2.jpg: {object_part: seal, issue_type: none, severity: none}
+case_017:
+  object_type: package
+  images:
+    img_1.jpg: {object_part: package_side, issue_type: water_damage, severity: medium}
+case_018:
+  object_type: package
+  images:
+    img_1.jpg: {object_part: contents, issue_type: none, severity: none, cropped: true, no_damage: true}
+    img_2.jpg: {object_part: contents, issue_type: none, severity: none, cropped: true, no_damage: true}
+case_019:
+  object_type: package
+  images:
+    img_1.jpg: {object_part: corner, issue_type: dent, severity: low, wrong_object: true}
+case_020:
+  object_type: package
+  images:
+    img_1.jpg: {object_part: seal, issue_type: none, severity: none, no_damage: true, text_instruction: true}
+    img_2.jpg: {object_part: seal, issue_type: none, severity: none, no_damage: true}

@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from claim_verification.domain.enums import RiskFlag, Severity
+from claim_verification.domain.enums import ImageQualityRisk, IssueType, ObjectPart, RiskFlag, Severity
 from claim_verification.domain.models import (
     ClaimExtractionResult,
     EvidenceValidationResult,
@@ -14,7 +14,7 @@ from claim_verification.domain.models import (
 
 
 class RiskAssessmentAgent:
-    """Produce contextual risk without overriding the visual evidence result."""
+    """Produce contextual risk flags without overriding visual evidence conclusions."""
 
     def __init__(self, user_history: dict[str, UserHistory] | None = None) -> None:
         self._user_history = user_history or {}
@@ -51,20 +51,46 @@ class RiskAssessmentAgent:
         flags: list[str] = []
         score = 0.0
 
+        quality_flags = [self._value(risk) for risk in vision.quality_risks]
+        for quality_flag in quality_flags:
+            if quality_flag in {item.value for item in RiskFlag}:
+                flags.append(quality_flag)
+
+        claim_issue = self._value(extraction.issue_type)
+        claim_part = self._normalize_part(self._value(extraction.object_part))
+        vision_issue = self._value(vision.issue_type)
+        vision_part = self._normalize_part(self._value(vision.object_part))
+
+        if self._claim_mismatch(claim_issue, vision_issue, claim_part, vision_part, vision.visible_damage):
+            flags.append(RiskFlag.CLAIM_MISMATCH.value)
+            score += 0.25
+
         if resolved_history:
             history_flags, history_score = self._history_risk(resolved_history)
             flags.extend(history_flags)
             score += history_score
 
-        evidence_flags, evidence_score = self._evidence_context_risk(extraction, vision, evidence)
-        flags.extend(evidence_flags)
-        score += evidence_score
+        if not evidence.evidence_standard_met:
+            flags.append(RiskFlag.INSUFFICIENT_EVIDENCE.value)
+            score += 0.15
+        if vision.duplicate_image_ids:
+            flags.append(RiskFlag.DUPLICATE_IMAGES.value)
+            score += 0.1
+        if claim_issue in {IssueType.UNSPECIFIED.value, IssueType.UNKNOWN.value} or claim_part in {
+            ObjectPart.UNSPECIFIED.value,
+            ObjectPart.UNKNOWN.value,
+        }:
+            flags.append(RiskFlag.AMBIGUOUS_CLAIM_DESCRIPTION.value)
+            score += 0.05
+
+        if score >= 0.2 or RiskFlag.USER_HISTORY_RISK.value in flags:
+            flags.append(RiskFlag.MANUAL_REVIEW_REQUIRED.value)
 
         flags = self._dedupe(flags) or [RiskFlag.NONE.value]
         return RiskAssessmentResult(
             risk_flags=flags,
             risk_score=round(min(score, 1.0), 3),
-            severity=self._severity(vision, score),
+            severity=self._severity(vision),
         )
 
     def _history_risk(self, history: UserHistory) -> tuple[list[str], float]:
@@ -76,42 +102,39 @@ class RiskAssessmentAgent:
             score += 0.2
         if history.last_90_days_claim_count >= 4:
             flags.append(RiskFlag.HIGH_RECENT_CLAIM_FREQUENCY.value)
-            score += 0.2
+            score += 0.15
         if history.rejected_claim >= 2:
             flags.append(RiskFlag.PRIOR_REJECTIONS.value)
-            score += 0.25
-        if history.past_claim_count:
-            manual_review_rate = history.manual_review_claim / max(history.past_claim_count, 1)
-            rejected_rate = history.rejected_claim / max(history.past_claim_count, 1)
-            if manual_review_rate >= 0.35:
-                flags.append("high_manual_review_rate")
-                score += 0.15
-            if rejected_rate >= 0.35:
-                flags.append("high_rejection_rate")
-                score += 0.15
+            score += 0.2
         return flags, score
 
     @staticmethod
-    def _evidence_context_risk(
-        extraction: ClaimExtractionResult,
-        vision: VisionAnalysisResult,
-        evidence: EvidenceValidationResult,
-    ) -> tuple[list[str], float]:
-        flags: list[str] = []
-        score = 0.0
-        if not vision.valid_image:
-            flags.append(RiskFlag.MISSING_OR_INVALID_IMAGE.value)
-            score += 0.3
-        if not evidence.evidence_standard_met:
-            flags.append(RiskFlag.INSUFFICIENT_EVIDENCE.value)
-            score += 0.2
-        if vision.duplicate_image_ids:
-            flags.append(RiskFlag.DUPLICATE_IMAGES.value)
-            score += 0.15
-        if str(extraction.issue_type) == "unspecified" or str(extraction.object_part) == "unspecified":
-            flags.append(RiskFlag.AMBIGUOUS_CLAIM_DESCRIPTION.value)
-            score += 0.1
-        return flags, score
+    def _claim_mismatch(
+        claim_issue: str,
+        vision_issue: str,
+        claim_part: str,
+        vision_part: str,
+        visible_damage: bool,
+    ) -> bool:
+        issue_mismatch = (
+            claim_issue not in {IssueType.UNSPECIFIED.value, IssueType.UNKNOWN.value, IssueType.NONE.value}
+            and vision_issue not in {IssueType.UNSPECIFIED.value, IssueType.UNKNOWN.value, IssueType.NONE.value}
+            and claim_issue != vision_issue
+        )
+        part_mismatch = (
+            claim_part not in {ObjectPart.UNSPECIFIED.value, ObjectPart.UNKNOWN.value}
+            and vision_part not in {ObjectPart.UNSPECIFIED.value, ObjectPart.UNKNOWN.value}
+            and claim_part != vision_part
+        )
+        no_damage_claimed_physical = (
+            claim_issue not in {IssueType.UNSPECIFIED.value, IssueType.UNKNOWN.value, IssueType.NONE.value}
+            and not visible_damage
+        )
+        return issue_mismatch or part_mismatch or no_damage_claimed_physical
+
+    @staticmethod
+    def _severity(vision: VisionAnalysisResult) -> Severity:
+        return Severity(vision.severity) if vision.severity else Severity.UNKNOWN
 
     @staticmethod
     def _split_flags(value: str) -> list[str]:
@@ -122,21 +145,18 @@ class RiskAssessmentAgent:
         seen: set[str] = set()
         result: list[str] = []
         for flag in flags:
-            if flag not in seen:
+            if flag not in seen and flag != RiskFlag.NONE.value:
                 seen.add(flag)
                 result.append(flag)
         return result
 
     @staticmethod
-    def _severity(vision: VisionAnalysisResult, risk_score: float) -> Severity:
-        visual_severity = str(vision.severity)
-        if visual_severity in {Severity.HIGH.value, Severity.MEDIUM.value, Severity.LOW.value}:
-            return Severity(visual_severity)
-        if risk_score >= 0.7:
-            return Severity.HIGH
-        if risk_score >= 0.35:
-            return Severity.MEDIUM
-        return Severity.LOW
+    def _normalize_part(value: str) -> str:
+        return "door" if value == "door_panel" else value
+
+    @staticmethod
+    def _value(value: object) -> str:
+        return str(getattr(value, "value", value))
 
     @staticmethod
     def _int(value: object) -> int:

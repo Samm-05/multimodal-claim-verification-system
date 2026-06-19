@@ -27,8 +27,8 @@ class Settings:
             sample_claims_path=data_dir / "sample_claims.csv",
             user_history_path=data_dir / "user_history.csv",
             evidence_requirements_path=data_dir / "evidence_requirements.csv",
-            output_path=project_root / "outputs" / "predictions.csv",
+            output_path=project_root / "output.csv",
             evaluation_path=project_root / "outputs" / "evaluation_report.json",
-            evaluation_markdown_path=project_root / "outputs" / "evaluation_report.md",
+            evaluation_markdown_path=project_root / "evaluation" / "evaluation_report.md",
             log_path=project_root / "logs" / "app.log",
         )

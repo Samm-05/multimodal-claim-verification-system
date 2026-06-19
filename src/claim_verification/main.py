@@ -55,6 +55,8 @@ def main() -> None:
         settings.evaluation_path.write_text(json.dumps(report.to_dict(), indent=2), encoding="utf-8")
         evaluator.write_markdown_report(report, settings.evaluation_markdown_path)
 
+    print(f"Wrote {len(outputs)} predictions to {output_path}")
+
 
 if __name__ == "__main__":
     main()

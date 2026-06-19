@@ -123,6 +123,13 @@ class VisionAnalysisResult(StrictSchema):
     reasoning: StrictStr = ""
 
 
+class QualityAssessmentResult(StrictSchema):
+    image_id: StrictStr
+    quality_risks: list[ImageQualityRisk] = Field(default_factory=list)
+    valid_for_analysis: StrictBool = True
+    reasoning: StrictStr = ""
+
+
 class ClaimExtractionResult(StrictSchema):
     claim: ClaimInput
     issue_type: IssueType = IssueType.UNSPECIFIED

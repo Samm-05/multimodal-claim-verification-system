@@ -131,8 +131,8 @@ class ClaimPipeline:
             lambda: self._risk_assessment_agent.assess(extraction, vision, evidence, user_history.get(claim.user_id)),
         )
         decision = self._stage("decision_engine", lambda: self._decision_agent.decide(extraction, vision, evidence, risk))
-        issue_type = self._prefer_specific(extraction.issue_type, vision.issue_type)
-        object_part = self._prefer_specific(extraction.object_part, vision.object_part)
+        issue_type = self._prefer_vision(extraction.issue_type, vision.issue_type)
+        object_part = self._prefer_vision(extraction.object_part, vision.object_part)
 
         return FinalClaimOutput(
             user_id=claim.user_id,
@@ -141,12 +141,12 @@ class ClaimPipeline:
             claim_object=self._value(claim.claim_object),
             evidence_standard_met=evidence.evidence_standard_met,
             evidence_standard_met_reason=evidence.evidence_standard_met_reason,
-            risk_flags=";".join(map(str, risk.risk_flags)),
+            risk_flags=";".join(flag for flag in map(str, risk.risk_flags) if flag != "none") or "none",
             issue_type=issue_type,
             object_part=object_part,
             claim_status=self._value(decision.claim_status),
             claim_status_justification=decision.claim_status_justification,
-            supporting_image_ids=";".join(vision.supporting_image_ids),
+            supporting_image_ids=";".join(vision.supporting_image_ids) or "none",
             valid_image=vision.valid_image,
             severity=self._value(risk.severity),
         )
@@ -168,8 +168,8 @@ class ClaimPipeline:
             evidence_standard_met=False,
             evidence_standard_met_reason=f"Processing failed after retries: {error}",
             risk_flags="processing_error",
-            issue_type="unspecified",
-            object_part="unspecified",
+            issue_type="unknown",
+            object_part="unknown",
             claim_status=ClaimStatus.NOT_ENOUGH_INFORMATION.value,
             claim_status_justification="The system could not complete all verification stages for this claim.",
             supporting_image_ids="",
@@ -182,8 +182,13 @@ class ClaimPipeline:
         return str(getattr(value, "value", value))
 
     @classmethod
-    def _prefer_specific(cls, primary: object, fallback: object) -> str:
-        primary_value = cls._value(primary)
-        fallback_value = cls._value(fallback)
-        return fallback_value if primary_value == "unspecified" else primary_value
+    def _prefer_vision(cls, extraction_value: object, vision_value: object) -> str:
+        vision_text = cls._value(vision_value)
+        extraction_text = cls._value(extraction_value)
+        unknown_values = {"unspecified", "unknown", "none"}
+        if vision_text not in unknown_values:
+            return vision_text
+        if extraction_text not in unknown_values:
+            return extraction_text
+        return vision_text if vision_text != "unspecified" else extraction_text
 

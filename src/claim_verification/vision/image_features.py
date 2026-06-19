@@ -33,10 +33,11 @@ class ImageFeatureExtractor:
 
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         height, width = gray.shape[:2]
-        blur_score = float(cv2.Laplacian(gray, cv2.CV_64F).var())
-        brightness = float(np.mean(gray))
-        contrast = float(np.std(gray))
-        edges = cv2.Canny(gray, 80, 160)
+        roi = gray[int(height * 0.2) : int(height * 0.85), int(width * 0.1) : int(width * 0.9)]
+        blur_score = float(cv2.Laplacian(roi, cv2.CV_64F).var())
+        brightness = float(np.mean(roi))
+        contrast = float(np.std(roi))
+        edges = cv2.Canny(roi, 80, 160)
         edge_density = float(np.count_nonzero(edges) / edges.size)
         notes = self._quality_notes(width, height, blur_score, brightness, contrast)
 

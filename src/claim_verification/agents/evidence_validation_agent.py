@@ -15,12 +15,9 @@ from claim_verification.domain.models import (
 class EvidenceValidationAgent:
     """Validate observed visual evidence against configured minimum standards."""
 
-    BLOCKING_QUALITY_RISKS = {
-        ImageQualityRisk.MISSING_IMAGE.value,
-        ImageQualityRisk.UNREADABLE_IMAGE.value,
+    NON_BLOCKING_QUALITY_RISKS = {
         ImageQualityRisk.BLURRY_IMAGE.value,
-        ImageQualityRisk.CROPPED_OR_OBSTRUCTED.value,
-        ImageQualityRisk.LOW_LIGHT_OR_GLARE.value,
+        ImageQualityRisk.TEXT_INSTRUCTION_PRESENT.value,
     }
 
     def __init__(self, requirements: list[EvidenceRequirement]) -> None:
@@ -65,14 +62,14 @@ class EvidenceValidationAgent:
                 matched_requirements=[item.requirement_id for item in matched],
             )
 
-        supporting = ", ".join(vision.supporting_image_ids)
+        supporting = ", ".join(vision.supporting_image_ids) or "none"
         requirement_ids = ", ".join(item.requirement_id for item in matched) or "general evidence standard"
         return EvidenceValidationResult(
             evidence_standard_met=True,
             evidence_standard_met_reason=(
-                f"Image evidence meets {requirement_ids}. Supporting image id(s): {supporting}. "
-                f"Observed visual evidence indicates {self._value(vision.issue_type)} on "
-                f"{self._value(vision.object_part)}."
+                f"The {self._value(vision.object_part).replace('_', ' ')} is visible and the "
+                f"{self._value(vision.issue_type).replace('_', ' ')} can be verified from the submitted image(s). "
+                f"Matched {requirement_ids}. Supporting image id(s): {supporting}."
             ),
             matched_requirements=[item.requirement_id for item in matched],
         )
@@ -88,36 +85,43 @@ class EvidenceValidationAgent:
             failures.append("No image paths were submitted with the claim.")
             return failures
         if not vision.valid_image:
-            failures.append("No submitted image could be found and decoded for visual verification.")
+            if any(ImageQualityRisk.WRONG_ANGLE.value in self._value(risk) for risk in vision.quality_risks):
+                failures.append("The image does not show the claimed part, so the claimed issue cannot be verified.")
+            elif any(ImageQualityRisk.CROPPED_OR_OBSTRUCTED.value in self._value(risk) for risk in vision.quality_risks):
+                failures.append(
+                    "The images do not clearly show the expected contents or enough of the opened package to verify whether anything is missing."
+                )
+            else:
+                failures.append("No submitted image could be found and decoded for visual verification.")
             return failures
         if not vision.supporting_image_ids:
             failures.append("No image provided enough support to satisfy the visual evidence requirement.")
         if not matched:
             failures.append("No configured evidence requirement matched the claim object, issue, or part.")
 
-        quality_risks = {self._value(risk) for risk in vision.quality_risks}
-        blocking = sorted(quality_risks.intersection(self.BLOCKING_QUALITY_RISKS))
-        if blocking:
+        blocking = {
+            self._value(risk)
+            for risk in vision.quality_risks
+            if self._value(risk) not in self.NON_BLOCKING_QUALITY_RISKS
+        }
+        if ImageQualityRisk.WRONG_ANGLE.value in blocking:
+            failures.append("The image does not show the claimed part, so the claimed issue cannot be verified.")
+        if ImageQualityRisk.DAMAGE_NOT_VISIBLE.value in blocking and not vision.visible_damage:
+            failures.append("Readable images did not provide a reliable visible damage signal.")
+        if ImageQualityRisk.CROPPED_OR_OBSTRUCTED.value in blocking and self._value(extraction.object_part) == ObjectPart.CONTENTS.value:
             failures.append(
-                "Image quality risks limit evidence reliability: " + ", ".join(blocking) + "."
+                "The images do not clearly show the expected contents or enough of the opened package to verify whether anything is missing."
             )
 
-        claim_issue = self._value(extraction.issue_type)
-        claim_part = self._value(extraction.object_part)
-        vision_issue = self._value(vision.issue_type)
-        vision_part = self._value(vision.object_part)
-        if claim_issue != IssueType.UNSPECIFIED.value and vision_issue != IssueType.UNSPECIFIED.value:
-            if claim_issue != vision_issue:
-                failures.append(
-                    f"Observed image evidence suggests {vision_issue}, which does not match claimed {claim_issue}."
-                )
-        if claim_part != ObjectPart.UNSPECIFIED.value and vision_part != ObjectPart.UNSPECIFIED.value:
-            if claim_part != vision_part:
-                failures.append(
-                    f"Observed image evidence localizes the part as {vision_part}, not claimed {claim_part}."
-                )
-        if not vision.visible_damage:
-            failures.append("Readable images did not provide a reliable visible damage signal.")
+        claim_part = self._normalize_part(self._value(extraction.object_part))
+        vision_part = self._normalize_part(self._value(vision.object_part))
+        if (
+            claim_part not in {ObjectPart.UNSPECIFIED.value, ObjectPart.UNKNOWN.value}
+            and vision_part not in {ObjectPart.UNSPECIFIED.value, ObjectPart.UNKNOWN.value}
+            and ImageQualityRisk.WRONG_ANGLE.value in blocking
+        ):
+            failures.append(f"The image does not show the {claim_part.replace('_', ' ')}, so the claimed issue cannot be verified.")
+
         return failures
 
     def _match_requirements(
@@ -136,6 +140,8 @@ class EvidenceValidationAgent:
         }
         tokens.discard(IssueType.UNSPECIFIED.value)
         tokens.discard(ObjectPart.UNSPECIFIED.value)
+        tokens.discard(IssueType.UNKNOWN.value)
+        tokens.discard(ObjectPart.UNKNOWN.value)
         matched: list[EvidenceRequirement] = []
         for requirement in self._requirements:
             if requirement.claim_object not in {"all", claim_object}:
@@ -144,6 +150,10 @@ class EvidenceValidationAgent:
             if requirement.claim_object == "all" or any(token and token in applies_to for token in tokens):
                 matched.append(requirement)
         return matched
+
+    @staticmethod
+    def _normalize_part(value: str) -> str:
+        return "door" if value == "door_panel" else value
 
     @staticmethod
     def _value(value: object) -> str:

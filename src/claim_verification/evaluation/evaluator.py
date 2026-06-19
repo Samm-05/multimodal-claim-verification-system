@@ -168,6 +168,28 @@ class Evaluator:
         lines.extend(
             [
                 "",
+                "## Failure Modes",
+                "",
+                "- Missing or unreadable images reduce evidence to `not_enough_information`.",
+                "- Wrong-angle or cropped images block part-specific verification.",
+                "- Claim/image mismatch routes to `contradicted` while preserving image-grounded reasoning.",
+                "- User history adds risk flags only; it does not override visible evidence.",
+                "",
+                "## Misclassification Review",
+                "",
+            ]
+        )
+        misclassified = [item for item in report.error_analysis if item["column"] == "claim_status"][:10]
+        if misclassified:
+            lines.extend(["| Row | User ID | Prediction | Label |", "|---:|---|---|---|"])
+            for item in misclassified:
+                lines.append(f"| {item['row']} | {item['user_id']} | {item['prediction']} | {item['label']} |")
+        else:
+            lines.append("No claim_status misclassifications were found.")
+
+        lines.extend(
+            [
+                "",
                 "## Runtime Analysis",
                 "",
                 f"- Runtime seconds: {report.runtime_seconds:.4f}",
@@ -254,10 +276,20 @@ class Evaluator:
         return {
             "records_processed": len(predictions),
             "images_referenced": image_count,
+            "images_processed": image_count,
             "external_model_calls": 0,
             "vision_backend": "OpenCV/Pillow heuristic feature extraction",
             "retry_attempts": run_summary.retry_attempts if run_summary else 0,
             "failed_records": run_summary.failed_records if run_summary else 0,
+            "caching_strategy": "per-run in-memory image feature extraction",
+            "retry_strategy": "per-claim bounded retries with recovery output",
+            "rate_limit_strategy": "not required for local CPU pipeline",
+            "token_estimate": 0,
+            "throughput_records_per_second": (
+                round(len(predictions) / run_summary.runtime_seconds, 4)
+                if run_summary and run_summary.runtime_seconds > 0
+                else 0
+            ),
         }
 
     @classmethod
