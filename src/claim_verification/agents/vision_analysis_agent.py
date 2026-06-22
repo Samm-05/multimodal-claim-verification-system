@@ -4,16 +4,17 @@ import re
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import cv2
+from loguru import logger
 
 from claim_verification.agents.image_quality_agent import ImageQualityAgent
 from claim_verification.domain.enums import ImageQualityRisk, IssueType, ObjectPart, Severity
 from claim_verification.domain.models import ClaimInput, ImageAnalysis, ImageEvidenceResult, VisionAnalysisResult
-from claim_verification.domain.ports import ImageRepository
+from claim_verification.domain.ports import ImageRepository, VisionProvider
 from claim_verification.vision.damage_detector import DamageDetector
 from claim_verification.vision.image_features import ImageFeatureExtractor
-from claim_verification.vision.part_encoder import decode_visual_markers
 
 
 @dataclass(frozen=True)
@@ -37,12 +38,14 @@ class VisionAnalysisAgent:
         quality_agent: ImageQualityAgent | None = None,
         damage_detector: DamageDetector | None = None,
         thresholds: VisionThresholds | None = None,
+        vision_provider: VisionProvider | None = None,
     ) -> None:
         self._image_repository = image_repository
         self._extractor = extractor
         self._quality_agent = quality_agent or ImageQualityAgent()
         self._damage_detector = damage_detector or DamageDetector()
         self._thresholds = thresholds or VisionThresholds()
+        self._vision_provider = vision_provider
 
     def analyze(self, claim: ClaimInput) -> VisionAnalysisResult:
         claimed_part = self._claimed_part(self._customer_text(claim.user_claim))
@@ -128,24 +131,38 @@ class VisionAnalysisAgent:
 
         resolved = self._image_repository.resolve(image.image_path)
         image_bgr = cv2.imread(str(resolved))
-        markers = decode_visual_markers(image_bgr) if image_bgr is not None else None
-        detected_part = markers.object_part if markers else ObjectPart.UNKNOWN.value
-        damage = self._damage_detector.detect(image_bgr) if image_bgr is not None else None
 
-        if markers and markers.confidence >= 0.5:
-            issue_type = self._issue_from_marker(markers.issue_type)
-            severity = self._severity_from_marker(markers.severity)
-            visible_damage = markers.issue_type not in {"none", "unknown"}
+        # ----- Vision provider (Gemini) → primary path -----
+        gemini_result = self._try_vision_provider(resolved, claim)
+
+        if gemini_result is not None:
+            issue_type = self._issue_from_marker(gemini_result.get("issue_type", "unknown"))
+            severity = self._severity_from_marker(gemini_result.get("severity", "unknown"))
+            detected_part = gemini_result.get("object_part", ObjectPart.UNKNOWN.value)
+            visible_damage = gemini_result.get("issue_type", "none") not in {"none", "unknown"}
+            logger.debug(
+                f"Using Gemini vision for {image.image_id}: "
+                f"issue={issue_type.value}, severity={severity.value}, part={detected_part}"
+            )
         else:
+            # ----- Heuristic fallback (DamageDetector) -----
+            damage = self._damage_detector.detect(image_bgr) if image_bgr is not None else None
             issue_type = damage.issue_type if damage else IssueType.UNKNOWN
             severity = damage.severity if damage else Severity.UNKNOWN
+            detected_part = ObjectPart.UNKNOWN.value
             visible_damage = damage.visible_damage if damage else False
+            logger.debug(
+                f"Using heuristic fallback for {image.image_id}: "
+                f"issue={issue_type.value}, severity={severity.value}"
+            )
+
+        damage_for_quality = self._damage_detector.detect(image_bgr) if image_bgr is not None else None
 
         quality = self._quality_agent.assess(
             image=image,
             image_bgr=image_bgr,
-            text_overlay_score=damage.text_overlay_score if damage else 0.0,
-            watermark_score=damage.watermark_score if damage else 0.0,
+            text_overlay_score=damage_for_quality.text_overlay_score if damage_for_quality else 0.0,
+            watermark_score=damage_for_quality.watermark_score if damage_for_quality else 0.0,
             claimed_part=claimed_part,
             detected_part=detected_part,
             visible_damage=visible_damage,
@@ -170,6 +187,18 @@ class VisionAnalysisAgent:
                 f"severity={severity.value}."
             ),
         )
+
+    def _try_vision_provider(
+        self, image_path: Path, claim: ClaimInput,
+    ) -> dict[str, Any] | None:
+        """Attempt AI-powered analysis; return None on any failure."""
+        if self._vision_provider is None:
+            return None
+        try:
+            return self._vision_provider.analyze_damage(image_path, claim)
+        except Exception as exc:
+            logger.warning(f"Vision provider error for {image_path.name}: {exc}")
+            return None
 
     @staticmethod
     def _customer_text(value: str) -> str:
