@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
-from claim_verification.domain.models import ClaimRecord, EvidenceRequirement, UserHistory
+from claim_verification.domain.models import ClaimInput, ClaimRecord, EvidenceRequirement, UserHistory
 
 
 class ClaimRepository(Protocol):
@@ -19,5 +19,19 @@ class ClaimRepository(Protocol):
 
 class ImageRepository(Protocol):
     def resolve(self, image_path: str) -> Path:
+        ...
+
+
+class VisionProvider(Protocol):
+    """Abstraction for AI-powered image damage analysis.
+
+    Implementations may use Gemini, OpenAI Vision, or any other
+    multimodal model. Returns None when analysis fails so that
+    callers can fall back to heuristic-based detection.
+    """
+
+    def analyze_damage(
+        self, image_path: Path, claim: ClaimInput,
+    ) -> dict[str, Any] | None:
         ...
 
