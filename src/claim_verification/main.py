@@ -42,6 +42,8 @@ def main() -> None:
         requirements=requirements,
         csv_repository=repository,
         max_retries=args.max_retries,
+        gemini_api_key=settings.gemini_api_key,
+        gemini_model=settings.gemini_model,
     )
     run_result = pipeline.run(claims, history, output_path)
     outputs = run_result.outputs
