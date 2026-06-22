@@ -80,8 +80,8 @@
 
 ## Runtime Analysis
 
-- Runtime seconds: 1.4903
-- Records per second: 13.4201
+- Runtime seconds: 1.6353
+- Records per second: 12.2302
 
 ## Cost Estimation
 
@@ -101,4 +101,4 @@
 - retry_strategy: per-claim bounded retries with recovery output
 - rate_limit_strategy: not required for local CPU pipeline
 - token_estimate: 0
-- throughput_records_per_second: 13.4201
+- throughput_records_per_second: 12.2302
