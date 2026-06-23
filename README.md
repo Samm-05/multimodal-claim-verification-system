@@ -114,17 +114,17 @@ Output:
 
 Responsible for:
 
-* Image inspection
-* Damage detection
-* Object identification
-* Severity estimation
+* Multimodal image analysis using **Google Gemini 2.5 Flash** (via the `VisionProvider` port)
+* Grounded visual damage inspection (dents, scratches, cracks, packaging damage)
+* Robust quality assessment (blur, lighting, obstruction, original image detection)
+* Resilient fallback to local OpenCV/Pillow computer vision heuristics if Gemini API keys are absent or calls fail
 
 Outputs:
 
-* Issue Type
-* Object Part
-* Severity
-* Supporting Images
+* Issue Type (dent, scratch, crack, torn_packaging, etc.)
+* Object Part (windshield, front_bumper, screen, contents, etc.)
+* Severity (none, low, medium, high)
+* Supporting Images (valid images with visible damage)
 
 ---
 
@@ -399,21 +399,18 @@ Benefits:
 
 ---
 
-## Cost Analysis
+## Cost Analysis & Rate Limiting
 
-Current implementation uses:
+The system runs in one of two modes depending on settings:
 
-```text
-OpenCV + Pillow
-```
-
-No external APIs or paid AI services are required.
-
-Estimated Processing Cost:
-
-```text
-$0.00
-```
+1. **AI-Powered (Gemini 2.5 Flash)**:
+   * Uses Google GenAI API to perform real-world multimodal understanding.
+   * **API Costs**: Free tier is available (10 RPM, 1500 RPD). Paid tier is extremely cost-effective (~$0.000075 per image).
+   * **Rate Limit Guard**: Integrates an automatic request delay (default 6.5s) to guarantee stay-under limits on the free tier.
+2. **Local Heuristics (Fallback)**:
+   * Activates automatically if `GEMINI_API_KEY` is not set or the API is unreachable.
+   * Runs offline with OpenCV/Pillow.
+   * **Estimated Cost**: $0.00
 
 ---
 
@@ -481,6 +478,21 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Configure Environment
+
+Copy the environment example file and set your Gemini API key:
+
+```bash
+copy .env.example .env   # On Windows
+cp .env.example .env     # On Linux/macOS
+```
+
+Open `.env` and add your key:
+```env
+GEMINI_API_KEY=your_actual_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
+```
+
 ---
 
 # ▶️ Usage
@@ -517,9 +529,7 @@ pytest
 
 # 📈 Future Improvements
 
-* Vision Language Models (VLMs)
 * GPT-4o Vision Integration
-* Gemini Vision Integration
 * Confidence Scoring Framework
 * Fraud Detection Engine
 * Human Review Dashboard

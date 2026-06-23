@@ -65,8 +65,11 @@ flowchart LR
 ### Vision Analysis Agent
 
 - Resolves and analyzes every submitted image.
-- Computes image quality metrics through OpenCV/Pillow.
-- Detects quality risks:
+- Integrates the `VisionProvider` port to execute AI-powered damage analysis using **Google Gemini 2.5 Flash**.
+- Implements domain-specific prompt engineering per `ClaimObject` (car, laptop, package) to ensure schema compliance and prevent hallucinations.
+- Validates LLM responses using Pydantic structure (`GeminiVisionResponse`).
+- Gracefully falls back to local OpenCV/Pillow heuristics (`DamageDetector`) if the API key is not configured or the API is unreachable.
+- Computes image quality metrics and detects quality risks:
   - `blurry_image`
   - `cropped_or_obstructed`
   - `low_light_or_glare`
@@ -233,6 +236,7 @@ claim_verification.main
 application.factory
   -> agents.*
   -> vision.image_features
+  -> vision.gemini_vision
 
 application.pipeline
   -> agents.*
@@ -241,11 +245,17 @@ application.pipeline
 agents.*
   -> domain.models
   -> domain.enums
-  -> domain.ports
+  -> domain.ports (VisionProvider)
   -> vision.image_features
 
 infrastructure.*
   -> domain.models
+
+vision.gemini_vision
+  -> domain.models
+  -> domain.enums
+  -> google-genai
+  -> pydantic
 
 vision.image_features
   -> domain.models
@@ -293,27 +303,25 @@ If labels are unavailable, the evaluator still reports row count and schema vali
 
 ## 11. Cost and Runtime Analysis
 
-Current implementation is CPU-only and deterministic.
+The system runs in either **AI-Powered (Gemini 2.5 Flash)** or **Local Heuristics** mode.
 
 Expected runtime drivers:
-
 - Number of claim rows.
 - Number of image paths per claim.
-- Image dimensions.
+- API rate-limiting delays (when AI mode is active).
+- Image dimensions (for local quality/fallback checks).
 - Perceptual hash computation.
 
 Approximate complexity:
-
 - CSV loading: `O(n)` rows.
 - Claim text extraction: `O(n * p)` where `p` is number of text patterns.
-- Image processing: `O(m * pixels)` where `m` is total image count.
+- Image processing (quality assessment): `O(m * pixels)` where `m` is total image count.
+- Gemini API communication: `O(m)` calls with a 6.5s delay to fit within free-tier limits.
 - Risk and decision rules: `O(n)`.
 
 Infrastructure cost:
-
-- Local runtime: no external API cost.
-- Container or batch deployment: CPU and storage only.
-- Future ML vision model deployment would add GPU or API inference cost.
+- **Local Heuristics (Offline)**: $0.00 cost.
+- **AI-Powered (Gemini)**: Free tier includes 10 RPM (Requests Per Minute) and 1500 RPD (Requests Per Day). The client respects this with a 6.5-second request delay. Paid tier costs are nominal (~$0.000075 per image).
 
 ## 12. Deployment Considerations
 
