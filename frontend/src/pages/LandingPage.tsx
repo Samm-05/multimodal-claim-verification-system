@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Shield, Cloud, BarChart3, ChevronRight } from 'lucide-react';
 
-export const LandingPage: React.FC = () => {
+export const LandingPage = () => {
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
