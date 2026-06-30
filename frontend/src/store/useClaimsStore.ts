@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Claim, MetricData, TaskItem, ClaimObject, Severity, ClaimStatus } from '../types';
+import type { Claim, MetricData, TaskItem, ClaimObject, Severity } from '../types';
 import { claimsData, dashboardMetrics, urgentTasks } from '../constants/mockData';
 
 interface ClaimsFilter {
@@ -23,6 +23,7 @@ interface ClaimsState {
   rejectClaim: (id: string) => void;
   escalateClaim: (id: string) => void;
   addNewClaim: (claim: Omit<Claim, 'id' | 'date'>) => void;
+  applyFilters: () => void;
 }
 
 export const useClaimsStore = create<ClaimsState>((set, get) => ({
