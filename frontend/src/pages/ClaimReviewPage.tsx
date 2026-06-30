@@ -24,7 +24,6 @@ import {
   costEstimate,
   aiReasoningSummary,
 } from '../constants/mockData';
-import { getDecisionStyles, getSeverityStyles } from '../lib/utils';
 import type { ClaimObject } from '../types';
 
 export const ClaimReviewPage: React.FC = () => {
