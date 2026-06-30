@@ -7,8 +7,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  HelpCircle,
-  Code,
   Shield,
   Smartphone,
   Building2,
@@ -17,8 +15,6 @@ import {
   ShieldAlert,
   ShieldCheck,
   ChevronLeft,
-  DollarSign,
-  Maximize2,
 } from 'lucide-react';
 import {
   evidenceImages,
@@ -28,8 +24,8 @@ import {
   costEstimate,
   aiReasoningSummary,
 } from '../constants/mockData';
-import { getDecisionStyles, getSeverityStyles, getStatusStyles } from '../lib/utils';
-import type { ClaimObject, Severity } from '../types';
+import { getDecisionStyles, getSeverityStyles } from '../lib/utils';
+import type { ClaimObject } from '../types';
 
 export const ClaimReviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,9 +48,6 @@ export const ClaimReviewPage: React.FC = () => {
       </div>
     );
   }
-
-  const decision = getDecisionStyles(claim.aiDecision);
-  const sev = getSeverityStyles(claim.severity);
 
   // Resolve object icon
   const getObjectIcon = (type: ClaimObject) => {
