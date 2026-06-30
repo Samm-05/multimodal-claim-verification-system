@@ -19,7 +19,6 @@ import {
   ArrowUpRight,
   TrendingUp,
   TrendingDown,
-  ArrowDown,
   MoreVertical,
   ChevronLeft,
   ChevronRight,
@@ -27,7 +26,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { getDecisionStyles, getSeverityStyles, getStatusStyles } from '../lib/utils';
-import type { Claim, ClaimObject, Severity } from '../types';
+import type { Claim, ClaimObject } from '../types';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
