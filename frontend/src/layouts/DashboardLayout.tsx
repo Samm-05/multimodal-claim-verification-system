@@ -1,36 +1,31 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/shared/Sidebar';
 import { TopBar } from '../components/shared/TopBar';
 import { ClaimUploadModal } from '../components/shared/ClaimUploadModal';
 import { useClaimsStore } from '../store/useClaimsStore';
-import { useThemeStore } from '../store/useThemeStore';
 
 export const DashboardLayout: React.FC = () => {
-  const theme = useThemeStore((state) => state.theme);
+  const [collapsed, setCollapsed] = useState(false);
   const { isUploadModalOpen, setUploadModalOpen } = useClaimsStore();
 
-  useEffect(() => {
-    document.documentElement.classList.add('dark');
-  }, [theme]);
-
   return (
-    <div className="min-h-screen bg-background-base text-on-surface">
+    <div className="min-h-screen bg-[#050505] text-[#F8FAFC] flex">
       {/* Sidebar Navigation */}
-      <Sidebar />
+      <Sidebar collapsed={collapsed} onToggleCollapse={() => setCollapsed(!collapsed)} />
 
       {/* Main Content Area */}
-      <div className="ml-64 min-h-screen flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
         {/* Top App Bar */}
         <TopBar />
 
-        {/* Dashboard Pages */}
-        <main className="flex-1 overflow-x-hidden">
+        {/* Dynamic Page Views */}
+        <main className="flex-1 p-6 md:p-8 max-w-[1600px] w-full mx-auto">
           <Outlet />
         </main>
       </div>
 
-      {/* Claim Upload / Multi-Agent Execution Modal */}
+      {/* Hero Claim Upload Modal */}
       <ClaimUploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
