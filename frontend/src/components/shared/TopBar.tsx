@@ -1,11 +1,9 @@
 import React from 'react';
-import { Search, Bell, Settings2, Sparkles, Plus } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { useClaimsStore } from '../../store/useClaimsStore';
-import { useThemeStore } from '../../store/useThemeStore';
 
 export const TopBar: React.FC = () => {
   const { searchQuery, setSearchQuery, setUploadModalOpen } = useClaimsStore();
-  const { theme, toggleTheme } = useThemeStore();
 
   return (
     <header className="h-16 flex justify-between items-center px-page-margin-desktop w-full sticky top-0 z-40 bg-background-base/80 backdrop-blur-md border-b border-border-subtle">

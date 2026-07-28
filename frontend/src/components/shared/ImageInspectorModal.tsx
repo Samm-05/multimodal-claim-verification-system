@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ZoomIn, ZoomOut, RotateCcw, ShieldCheck, ShieldAlert, FileText, Camera, MapPin, Clock } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCcw, ShieldCheck, ShieldAlert, Camera, MapPin, Clock } from 'lucide-react';
 
 interface ImageInspectorModalProps {
   isOpen: boolean;
