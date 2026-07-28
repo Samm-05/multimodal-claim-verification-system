@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Plus, Sparkles, Activity } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { useClaimsStore } from '../../store/useClaimsStore';
 
 export const TopBar: React.FC = () => {
