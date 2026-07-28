@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Sparkles, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
+import { X, Upload, Sparkles, CheckCircle2, Loader2, ArrowRight, Image as ImageIcon, Eye, ShieldCheck } from 'lucide-react';
 import { useVerifyClaimMutation } from '../../hooks/useClaimsQuery';
 
 interface ClaimUploadModalProps {
@@ -11,7 +11,7 @@ interface ClaimUploadModalProps {
 export const ClaimUploadModal: React.FC<ClaimUploadModalProps> = ({ isOpen, onClose }) => {
   const [claimObject, setClaimObject] = useState('vehicle');
   const [userClaimText, setUserClaimText] = useState('');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [pipelineStep, setPipelineStep] = useState<number>(0);
 
   const verifyMutation = useVerifyClaimMutation();
@@ -22,16 +22,18 @@ export const ClaimUploadModal: React.FC<ClaimUploadModalProps> = ({ isOpen, onCl
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      setSelectedImage(URL.createObjectURL(file));
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files);
+      const urls = files.map((file) => URL.createObjectURL(file));
+      setSelectedImages((prev) => [...prev, ...urls]);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedImage(URL.createObjectURL(file));
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      const urls = files.map((file) => URL.createObjectURL(file));
+      setSelectedImages((prev) => [...prev, ...urls]);
     }
   };
 
@@ -39,29 +41,29 @@ export const ClaimUploadModal: React.FC<ClaimUploadModalProps> = ({ isOpen, onCl
     e.preventDefault();
     if (!userClaimText.trim()) return;
 
-    setPipelineStep(1); // Claim Extraction
+    setPipelineStep(1); // 1. Claim Extraction
     await new Promise((r) => setTimeout(r, 600));
 
-    setPipelineStep(2); // Vision & Quality Analysis
+    setPipelineStep(2); // 2. OpenCV Vision Analysis
     await new Promise((r) => setTimeout(r, 700));
 
-    setPipelineStep(3); // Evidence Validation & Risk Assessment
+    setPipelineStep(3); // 3. Evidence Validation & Risk Scoring
     await new Promise((r) => setTimeout(r, 600));
 
-    setPipelineStep(4); // Decision Agent
+    setPipelineStep(4); // 4. Decision Engine Verdict
 
     verifyMutation.mutate(
       {
         userClaim: userClaimText,
         claimObject: claimObject,
-        imagePaths: selectedImage ? [selectedImage] : undefined,
+        imagePaths: selectedImages.length > 0 ? selectedImages : undefined,
       },
       {
         onSuccess: () => {
           setTimeout(() => {
             setPipelineStep(0);
             setUserClaimText('');
-            setSelectedImage(null);
+            setSelectedImages([]);
             onClose();
           }, 800);
         },
@@ -73,61 +75,72 @@ export const ClaimUploadModal: React.FC<ClaimUploadModalProps> = ({ isOpen, onCl
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background-base/80 backdrop-blur-md">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#050505]/85 backdrop-blur-xl">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="w-full max-w-2xl bg-surface-card border border-border-subtle rounded-2xl p-6 shadow-2xl relative overflow-hidden"
+          className="w-full max-w-2xl bg-[#141720] border border-[rgba(255,255,255,0.08)] rounded-3xl p-8 shadow-2xl relative overflow-hidden ai-glow"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-border-subtle pb-4 mb-6">
+          {/* Top Bar Header */}
+          <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] pb-5 mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 text-primary">
+              <div className="p-2.5 rounded-xl bg-[#8B7BFF]/15 border border-[#8B7BFF]/30 text-[#8B7BFF]">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-on-surface">Submit Claim for Multi-Agent Verification</h3>
-                <p className="text-xs text-text-muted">Real-time processing via ClaimIQ Python pipeline</p>
+                <h3 className="text-lg font-bold text-[#F8FAFC]">Execute Multi-Agent Claim Verification</h3>
+                <p className="text-xs text-[#A1A1AA]">Real-time Python verification engine execution</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-lg text-text-muted hover:text-on-surface hover:bg-surface-variant transition-all cursor-pointer"
+              className="p-2 rounded-xl text-[#A1A1AA] hover:text-[#F8FAFC] hover:bg-[#0F1117] transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {pipelineStep > 0 ? (
-            /* Live Pipeline Execution Progress */
-            <div className="py-8 space-y-6 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border border-primary/30 text-primary ai-glow animate-pulse">
-                <Loader2 className="w-8 h-8 animate-spin" />
+            /* Live Laser Scanning AI Pipeline Execution Progress */
+            <div className="py-12 space-y-8 text-center relative overflow-hidden">
+              {/* Laser Line */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#8B7BFF] to-transparent animate-[pulse_1.5s_infinite]"></div>
               </div>
-              <h4 className="text-xl font-bold text-on-surface">
-                {pipelineStep === 1 && '1/4 Extracting Claim Intent...'}
-                {pipelineStep === 2 && '2/4 Running OpenCV Vision & Quality Checks...'}
-                {pipelineStep === 3 && '3/4 Validating Evidence & Assessing Risk...'}
-                {pipelineStep === 4 && '4/4 Generating AI Final Justification...'}
-              </h4>
+
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#8B7BFF]/15 border border-[#8B7BFF]/40 text-[#8B7BFF] ai-glow-strong animate-pulse">
+                <Loader2 className="w-10 h-10 animate-spin" />
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-2xl font-extrabold text-[#F8FAFC]">
+                  {pipelineStep === 1 && '1/4 Extracting Customer Claim Terms...'}
+                  {pipelineStep === 2 && '2/4 Running OpenCV Vision & Quality Core...'}
+                  {pipelineStep === 3 && '3/4 Validating Evidence & History Risks...'}
+                  {pipelineStep === 4 && '4/4 Generating AI Explanation & Verdict...'}
+                </h4>
+                <p className="text-xs text-[#A1A1AA] font-mono">
+                  Python backend multi-agent pipeline processing in background
+                </p>
+              </div>
+
               <div className="max-w-md mx-auto space-y-2">
-                <div className="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-[#0F1117] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-[#8B7BFF] to-[#6D5DF6] transition-all duration-500"
                     style={{ width: `${(pipelineStep / 4) * 100}%` }}
                   ></div>
                 </div>
-                <p className="text-xs text-text-muted">Multi-Agent pipeline executing safely in background</p>
               </div>
             </div>
           ) : (
-            /* Claim Upload Form */
+            /* Hero Image Upload & Claim Form */
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Claim Object Type */}
+              {/* Domain Selection */}
               <div>
-                <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">
-                  Claim Object Domain
+                <label className="block text-xs font-bold text-[#A1A1AA] uppercase tracking-wider mb-2 font-mono">
+                  1. Select Claim Domain
                 </label>
                 <div className="grid grid-cols-4 gap-3">
                   {[
@@ -140,10 +153,10 @@ export const ClaimUploadModal: React.FC<ClaimUploadModalProps> = ({ isOpen, onCl
                       key={item.id}
                       type="button"
                       onClick={() => setClaimObject(item.id)}
-                      className={`py-2.5 px-3 rounded-lg border text-sm font-semibold transition-all cursor-pointer ${
+                      className={`py-3 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                         claimObject === item.id
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border-subtle bg-surface-dim text-text-muted hover:border-border-subtle/80'
+                          ? 'border-[#8B7BFF] bg-[#8B7BFF]/15 text-[#8B7BFF] shadow-[0_0_15px_rgba(139,123,255,0.2)]'
+                          : 'border-[rgba(255,255,255,0.08)] bg-[#0F1117] text-[#A1A1AA] hover:border-[rgba(255,255,255,0.15)]'
                       }`}
                     >
                       {item.label}
@@ -152,72 +165,82 @@ export const ClaimUploadModal: React.FC<ClaimUploadModalProps> = ({ isOpen, onCl
                 </div>
               </div>
 
-              {/* Customer Chat Transcript / Claim Description */}
+              {/* Customer Chat Transcript Statement */}
               <div>
-                <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">
-                  Customer Conversation / Claim Statement
+                <label className="block text-xs font-bold text-[#A1A1AA] uppercase tracking-wider mb-2 font-mono">
+                  2. Ground-Truth Customer Statement
                 </label>
                 <textarea
                   rows={3}
                   value={userClaimText}
                   onChange={(e) => setUserClaimText(e.target.value)}
-                  placeholder="e.g. Customer: Front bumper hit while parking. Deep scratch and cracked headlight..."
-                  className="w-full bg-surface-dim border border-border-subtle rounded-xl p-3 text-sm text-on-surface focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all resize-none"
+                  placeholder="e.g. Customer: Morning. Front bumper looks dented and left headlight shattered..."
+                  className="w-full bg-[#0F1117] border border-[rgba(255,255,255,0.08)] rounded-xl p-3.5 text-xs text-[#F8FAFC] focus:ring-2 focus:ring-[#8B7BFF] focus:border-[#8B7BFF] outline-none transition-all resize-none"
                   required
                 />
               </div>
 
-              {/* Drag & Drop Image Upload Zone */}
+              {/* Hero Hero Image Upload Zone */}
               <div>
-                <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-2">
-                  Damage Image Evidence
+                <label className="block text-xs font-bold text-[#A1A1AA] uppercase tracking-wider mb-2 font-mono">
+                  3. Damage Image Evidence (Hero Drag &amp; Drop)
                 </label>
+
                 <div
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className="border-2 border-dashed border-border-subtle hover:border-primary/50 rounded-xl p-6 text-center cursor-pointer transition-all bg-surface-dim/50 relative overflow-hidden"
+                  className="border-2 border-dashed border-[rgba(255,255,255,0.12)] hover:border-[#8B7BFF]/60 rounded-2xl p-6 text-center cursor-pointer transition-all bg-[#0F1117]/60 relative overflow-hidden group"
                 >
                   <input
                     type="file"
+                    multiple
                     accept="image/*"
                     onChange={handleFileChange}
                     className="absolute inset-0 opacity-0 cursor-pointer"
                   />
-                  {selectedImage ? (
-                    <div className="flex items-center justify-center gap-4">
-                      <img src={selectedImage} alt="Preview" className="w-16 h-16 object-cover rounded-lg border border-border-subtle" />
-                      <div className="text-left">
-                        <p className="text-xs font-bold text-success flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Image Attached
-                        </p>
-                        <p className="text-[11px] text-text-muted">Click or drag to replace</p>
+
+                  {selectedImages.length > 0 ? (
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap justify-center gap-3">
+                        {selectedImages.map((img, i) => (
+                          <div key={i} className="relative w-16 h-16 rounded-xl border border-[rgba(255,255,255,0.15)] overflow-hidden shadow-lg">
+                            <img src={img} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                          </div>
+                        ))}
                       </div>
+                      <p className="text-xs text-[#22C55E] font-bold flex items-center justify-center gap-1">
+                        <CheckCircle2 className="w-4 h-4" /> {selectedImages.length} Image(s) Attached (Click or drag to add more)
+                      </p>
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      <Upload className="w-8 h-8 mx-auto text-text-muted" />
-                      <p className="text-xs text-text-muted font-medium">
-                        Drag and drop claim photos here, or <span className="text-primary font-bold">browse</span>
-                      </p>
-                      <p className="text-[10px] text-text-muted">Supports JPG, PNG, WEBP up to 25MB</p>
+                    <div className="space-y-3">
+                      <div className="w-12 h-12 mx-auto rounded-2xl bg-[#8B7BFF]/10 text-[#8B7BFF] flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Upload className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#F8FAFC] font-bold">
+                          Drag &amp; drop claim photos here, or <span className="text-[#8B7BFF] underline">browse files</span>
+                        </p>
+                        <p className="text-[11px] text-[#A1A1AA] mt-1">Supports JPG, PNG, WEBP • Auto Quality &amp; Blur Compression Check</p>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Submit Action */}
+              {/* Submit Buttons */}
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-lg border border-border-subtle bg-transparent text-text-muted text-sm hover:text-on-surface transition-all cursor-pointer font-medium"
+                  className="px-5 py-2.5 rounded-xl border border-[rgba(255,255,255,0.08)] bg-transparent text-[#A1A1AA] text-xs font-semibold hover:text-[#F8FAFC] transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!userClaimText.trim() || verifyMutation.isPending}
-                  className="px-6 py-2 rounded-lg bg-primary text-on-primary font-bold text-sm hover:opacity-90 transition-all cursor-pointer btn-hover-effect flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-xl bg-[#8B7BFF] text-[#050505] font-bold text-xs hover:opacity-90 transition-all cursor-pointer btn-hover-effect flex items-center gap-2 disabled:opacity-50 shadow-[0_0_20px_rgba(139,123,255,0.3)]"
                 >
                   <span>Execute Verification Pipeline</span>
                   <ArrowRight className="w-4 h-4" />
