@@ -4,16 +4,14 @@ import { useClaimDetailQuery, useUpdateClaimDecisionMutation } from '../hooks/us
 import { ImageInspectorModal } from '../components/shared/ImageInspectorModal';
 import {
   ZoomIn,
-  CheckCircle2,
   AlertTriangle,
   XCircle,
-  Shield,
   Smartphone,
   Building2,
   Package,
   Car,
-  ShieldAlert,
   ShieldCheck,
+  ShieldAlert,
   ChevronLeft,
   MessageSquare,
   FileCheck,
@@ -151,7 +149,7 @@ export const ClaimReviewPage: React.FC = () => {
             {/* Thumbnail Grid */}
             {claimData.imagePaths && claimData.imagePaths.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
-                {claimData.imagePaths.map((img, idx) => (
+                {claimData.imagePaths.map((img: string, idx: number) => (
                   <div
                     key={idx}
                     onClick={() => openInspector(img)}
@@ -173,8 +171,10 @@ export const ClaimReviewPage: React.FC = () => {
               </div>
               <div className="space-y-1.5 text-xs text-text-muted">
                 <div className="flex justify-between">
-                  <span>Detected Part:</span>
-                  <strong className="text-on-surface capitalize">{claimData.object?.part || 'headlight'}</strong>
+                  <span>Target Part:</span>
+                  <strong className="text-on-surface capitalize flex items-center gap-1">
+                    {getObjectIcon(claimData.object?.type || 'vehicle')} {claimData.object?.part || 'headlight'}
+                  </strong>
                 </div>
                 <div className="flex justify-between">
                   <span>Issue Category:</span>
@@ -231,7 +231,7 @@ export const ClaimReviewPage: React.FC = () => {
               </div>
               {claimData.riskFlags && claimData.riskFlags.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
-                  {claimData.riskFlags.map((rf, i) => (
+                  {claimData.riskFlags.map((rf: string, i: number) => (
                     <span key={i} className="bg-warning/10 text-warning border border-warning/20 text-xs px-2 py-1 rounded-lg font-mono">
                       {rf.replace('_', ' ')}
                     </span>
@@ -248,7 +248,7 @@ export const ClaimReviewPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-primary" />
-                <h4 className="text-sm font-bold text-on-surface">Decision Agent Verdict & AI Explanation</h4>
+                <h4 className="text-sm font-bold text-on-surface">Decision Agent Verdict &amp; AI Explanation</h4>
               </div>
               <span className="text-xs font-mono text-primary font-bold">Deterministic Pipeline</span>
             </div>
@@ -283,7 +283,7 @@ export const ClaimReviewPage: React.FC = () => {
                 disabled={decisionMutation.isPending}
                 className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-success text-on-primary text-xs font-bold hover:opacity-90 transition-all cursor-pointer btn-hover-effect flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
               >
-                <Check className="w-4 h-4" /> Approve & Payout
+                <Check className="w-4 h-4" /> Approve &amp; Payout
               </button>
             </div>
           </div>
