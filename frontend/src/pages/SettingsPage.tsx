@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Sparkles, Sliders, HardDrive, Save, CheckCircle2, Eye, Cpu } from 'lucide-react';
+import { Shield, Sparkles, Sliders, Save, CheckCircle2, Eye } from 'lucide-react';
 import { claimsApi } from '../services/api';
 import { VisionProviderFactory } from '../services/visionProvider';
 import type { VisionProviderType } from '../types';
