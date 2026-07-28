@@ -1,53 +1,53 @@
 import React from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Sparkles, Activity } from 'lucide-react';
 import { useClaimsStore } from '../../store/useClaimsStore';
 
 export const TopBar: React.FC = () => {
   const { searchQuery, setSearchQuery, setUploadModalOpen } = useClaimsStore();
 
   return (
-    <header className="h-16 flex justify-between items-center px-page-margin-desktop w-full sticky top-0 z-40 bg-background-base/80 backdrop-blur-md border-b border-border-subtle">
+    <header className="h-16 flex items-center justify-between px-8 w-full sticky top-0 z-20 bg-[#050505]/90 backdrop-blur-xl border-b border-[rgba(255,255,255,0.08)]">
       {/* Search Input */}
-      <div className="flex items-center gap-stack-lg flex-1">
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted w-4 h-4" />
+      <div className="flex items-center gap-4 flex-1 max-w-lg">
+        <div className="relative w-full">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A1A1AA] w-4 h-4" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-surface-container-low border border-border-subtle rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all text-sm text-on-surface placeholder:text-text-muted"
-            placeholder="Search claims, user IDs, issues..."
+            className="w-full bg-[#0F1117] border border-[rgba(255,255,255,0.08)] rounded-xl py-2 pl-10 pr-4 focus:ring-2 focus:ring-[#8B7BFF] focus:border-[#8B7BFF] outline-none transition-all text-sm text-[#F8FAFC] placeholder:text-[#A1A1AA]"
+            placeholder="Search claims, user IDs, damage parts..."
           />
         </div>
       </div>
 
-      {/* System Status & Actions */}
+      {/* Action Controls & User Identity */}
       <div className="flex items-center gap-4">
-        {/* Backend Live Indicator */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-surface-dim border border-border-subtle text-[11px] font-mono font-medium text-text-muted">
-          <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-          <span>FastAPI • OpenCV Active</span>
+        {/* Backend Pipeline Live Status */}
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0F1117] border border-[rgba(255,255,255,0.08)] text-xs font-mono text-[#A1A1AA]">
+          <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse"></span>
+          <span>FastAPI • OpenCV Core</span>
         </div>
 
-        {/* Submit Claim Action */}
+        {/* New Claim Trigger */}
         <button
           onClick={() => setUploadModalOpen(true)}
-          className="bg-primary text-on-primary font-bold text-xs px-4 py-2 rounded-lg cursor-pointer transition-all btn-hover-effect flex items-center gap-1.5 shadow-[0_0_15px_rgba(139,124,255,0.2)]"
+          className="bg-[#8B7BFF] text-[#050505] font-bold text-xs px-4 py-2 rounded-xl cursor-pointer transition-all btn-hover-effect flex items-center gap-2 shadow-[0_0_20px_rgba(139,123,255,0.25)]"
         >
           <Plus className="w-4 h-4" />
-          <span>New Claim</span>
+          <span>Execute Claim Verification</span>
         </button>
 
-        <div className="h-8 w-[1px] bg-border-subtle mx-1"></div>
+        <div className="h-6 w-[1px] bg-[rgba(255,255,255,0.08)] mx-1"></div>
 
-        {/* User Avatar */}
+        {/* User Identity Pill */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 text-primary font-bold text-xs flex items-center justify-center font-mono">
+          <div className="w-8 h-8 rounded-full bg-[#8B7BFF]/20 border border-[#8B7BFF]/40 text-[#8B7BFF] font-extrabold text-xs flex items-center justify-center font-mono">
             AS
           </div>
           <div className="hidden lg:block text-right">
-            <p className="text-xs font-bold leading-tight text-on-surface">Alex Sterling</p>
-            <p className="text-[10px] text-text-muted">Senior Claim Adjuster</p>
+            <p className="text-xs font-bold leading-tight text-[#F8FAFC]">Alex Sterling</p>
+            <p className="text-[10px] text-[#A1A1AA]">Senior Claim Adjuster</p>
           </div>
         </div>
       </div>
