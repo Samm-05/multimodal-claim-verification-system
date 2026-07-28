@@ -4,16 +4,11 @@ import { motion } from 'framer-motion';
 import {
   ArrowRight,
   Shield,
-  Cloud,
-  BarChart3,
   ChevronRight,
-  Sparkles,
-  CheckCircle2,
   Cpu,
   Eye,
   FileCheck,
-  ShieldAlert,
-  Zap,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const LandingPage = () => {
@@ -21,7 +16,6 @@ export const LandingPage = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [activeTab, setActiveTab] = useState<'extraction' | 'vision' | 'evidence' | 'decision'>('vision');
 
-  // Optimized Particle Mesh Shader Canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -52,7 +46,6 @@ export const LandingPage = () => {
     const draw = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // Deep dark mesh gradient
       const gradient = ctx.createRadialGradient(width / 2, height / 3, 10, width / 2, height / 2, Math.max(width, height));
       gradient.addColorStop(0, '#0d0b18');
       gradient.addColorStop(0.5, '#050505');
@@ -60,7 +53,6 @@ export const LandingPage = () => {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
 
-      // Inter-particle web lines
       ctx.strokeStyle = 'rgba(139, 124, 255, 0.08)';
       ctx.lineWidth = 0.8;
       for (let i = 0; i < particleCount; i++) {
@@ -78,7 +70,6 @@ export const LandingPage = () => {
         }
       }
 
-      // Render nodes
       for (let i = 0; i < particleCount; i++) {
         const p = particles[i];
         ctx.fillStyle = `rgba(139, 124, 255, ${p.alpha})`;
@@ -130,7 +121,7 @@ export const LandingPage = () => {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="text-4xl md:text-6xl lg:text-7xl max-w-5xl mx-auto tracking-tight font-extrabold text-on-surface leading-tight"
           >
-            Autonomous Claim Verification with <span className="shimmer-text italic">Computer Vision</span> & Multi-Agent Intelligence.
+            Autonomous Claim Verification with <span className="shimmer-text italic">Computer Vision</span> &amp; Multi-Agent Intelligence.
           </motion.h1>
 
           <motion.p
@@ -319,7 +310,7 @@ export const LandingPage = () => {
           <div className="md:col-span-4 glass-card rounded-2xl p-8 flex flex-col justify-between hover:border-primary/50 transition-all hover:scale-[1.01]">
             <div>
               <Eye className="w-10 h-10 text-primary mb-6" />
-              <h3 className="text-2xl font-bold mb-2">OpenCV & Gemini Ready</h3>
+              <h3 className="text-2xl font-bold mb-2">OpenCV &amp; Gemini Ready</h3>
               <p className="text-text-muted text-sm leading-relaxed">
                 Pluggable Vision Provider abstraction layer. Switch between OpenCV computer vision core, Gemini Vision, GPT-4o, and Claude without altering UI code.
               </p>

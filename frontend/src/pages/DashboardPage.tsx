@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Sparkles,
-  Timer,
   SlidersHorizontal,
   Car,
   Smartphone,
@@ -26,7 +25,6 @@ export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { searchQuery, filters, setFilter, setActiveClaim, setUploadModalOpen } = useClaimsStore();
 
-  // Fetch real dataset claims from FastAPI / API Layer
   const { data, isLoading, error } = useClaimsQuery({
     query: searchQuery,
     object_type: filters.objectType,
@@ -55,7 +53,6 @@ export const DashboardPage: React.FC = () => {
     }
   };
 
-  // Metrics summary derived directly from claims dataset
   const totalCount = claimsList.length;
   const supportedCount = claimsList.filter((c) => c.claimStatus === 'supported').length;
   const flaggedCount = claimsList.filter((c) => c.riskFlags.length > 0).length;
@@ -82,7 +79,7 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Real Dataset Metrics Grid */}
+      {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="glass-card border border-border-subtle p-5 rounded-2xl flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
@@ -147,7 +144,6 @@ export const DashboardPage: React.FC = () => {
             <SlidersHorizontal className="w-3.5 h-3.5" /> Filters:
           </span>
 
-          {/* Object Type Filter */}
           <select
             value={filters.objectType}
             onChange={(e) => setFilter('objectType', e.target.value)}
@@ -160,7 +156,6 @@ export const DashboardPage: React.FC = () => {
             <option value="property">Property</option>
           </select>
 
-          {/* Severity Filter */}
           <select
             value={filters.severity}
             onChange={(e) => setFilter('severity', e.target.value)}
@@ -197,7 +192,7 @@ export const DashboardPage: React.FC = () => {
                 <tr className="border-b border-border-subtle bg-surface-dim/60 text-text-muted uppercase tracking-wider font-mono text-[11px]">
                   <th className="py-3.5 px-4 font-semibold">Claim ID</th>
                   <th className="py-3.5 px-4 font-semibold">Claimant</th>
-                  <th className="py-3.5 px-4 font-semibold">Domain & Part</th>
+                  <th className="py-3.5 px-4 font-semibold">Domain &amp; Part</th>
                   <th className="py-3.5 px-4 font-semibold">Evidence Status</th>
                   <th className="py-3.5 px-4 font-semibold">Risk Signals</th>
                   <th className="py-3.5 px-4 font-semibold">Confidence</th>
@@ -212,18 +207,15 @@ export const DashboardPage: React.FC = () => {
                     onClick={() => handleRowClick(claim)}
                     className="hover:bg-surface-dim/80 transition-colors cursor-pointer group"
                   >
-                    {/* ID */}
                     <td className="py-3.5 px-4 font-mono font-bold text-primary group-hover:underline">
                       {claim.id}
                     </td>
 
-                    {/* Claimant */}
                     <td className="py-3.5 px-4">
                       <div className="font-semibold text-on-surface">{claim.customer.name}</div>
                       <div className="text-[10px] text-text-muted font-mono">{claim.userId}</div>
                     </td>
 
-                    {/* Domain & Part */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-1.5 font-medium text-on-surface capitalize">
                         {getObjectIcon(claim.object.type)}
@@ -232,7 +224,6 @@ export const DashboardPage: React.FC = () => {
                       <div className="text-[10px] text-text-muted capitalize">{claim.object.issue}</div>
                     </td>
 
-                    {/* Evidence Status Badge */}
                     <td className="py-3.5 px-4">
                       {claim.claimStatus === 'supported' ? (
                         <span className="bg-success/15 text-success border border-success/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold inline-flex items-center gap-1">
@@ -249,7 +240,6 @@ export const DashboardPage: React.FC = () => {
                       )}
                     </td>
 
-                    {/* Risk Signals */}
                     <td className="py-3.5 px-4">
                       {claim.riskFlags && claim.riskFlags.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
@@ -264,7 +254,6 @@ export const DashboardPage: React.FC = () => {
                       )}
                     </td>
 
-                    {/* Confidence Progress Bar */}
                     <td className="py-3.5 px-4">
                       <div className="w-24 space-y-1">
                         <div className="flex justify-between text-[10px] font-mono">
@@ -281,7 +270,6 @@ export const DashboardPage: React.FC = () => {
                       </div>
                     </td>
 
-                    {/* Decision Badge */}
                     <td className="py-3.5 px-4">
                       <span
                         className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
@@ -296,7 +284,6 @@ export const DashboardPage: React.FC = () => {
                       </span>
                     </td>
 
-                    {/* Action Link */}
                     <td className="py-3.5 px-4 text-right">
                       <div className="inline-flex items-center gap-1 text-primary font-bold group-hover:translate-x-1 transition-transform">
                         <span>Review</span>
