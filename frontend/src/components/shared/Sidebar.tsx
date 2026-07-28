@@ -5,8 +5,6 @@ import {
   BarChart3,
   Settings,
   Plus,
-  Shield,
-  HelpCircle,
 } from 'lucide-react';
 import { Logo } from './Logo';
 import { useClaimsStore } from '../../store/useClaimsStore';
