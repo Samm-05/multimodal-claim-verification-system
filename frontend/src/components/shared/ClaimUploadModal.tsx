@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Sparkles, CheckCircle2, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
+import { X, Upload, Sparkles, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
 import { useVerifyClaimMutation } from '../../hooks/useClaimsQuery';
 
 interface ClaimUploadModalProps {
