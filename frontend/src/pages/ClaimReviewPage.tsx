@@ -18,7 +18,6 @@ import {
   Cpu,
   Loader2,
   Check,
-  ArrowRight,
   Sparkles,
   Eye,
   FileText,
@@ -89,7 +88,6 @@ export const ClaimReviewPage: React.FC = () => {
     setInspectorOpen(true);
   };
 
-  // 7-Step Workflow Timeline Steps
   const workflowSteps = [
     { label: 'Upload', icon: FileText, completed: true },
     { label: 'Image Processing', icon: Cpu, completed: true },
