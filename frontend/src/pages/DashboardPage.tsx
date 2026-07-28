@@ -18,10 +18,8 @@ import {
   XCircle,
   HelpCircle,
   Loader2,
-  Activity,
   Cpu,
   Download,
-  ShieldCheck,
 } from 'lucide-react';
 import type { Claim, ClaimObject } from '../types';
 
@@ -29,7 +27,6 @@ export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { searchQuery, filters, setFilter, setActiveClaim, setUploadModalOpen } = useClaimsStore();
 
-  // Fetch real dataset claims from FastAPI / API Layer
   const { data, isLoading, error } = useClaimsQuery({
     query: searchQuery,
     object_type: filters.objectType,
@@ -58,7 +55,6 @@ export const DashboardPage: React.FC = () => {
     }
   };
 
-  // Dynamic Dataset Metrics
   const totalCount = claimsList.length;
   const supportedCount = claimsList.filter((c) => c.claimStatus === 'supported').length;
   const flaggedCount = claimsList.filter((c) => c.riskFlags.length > 0).length;
