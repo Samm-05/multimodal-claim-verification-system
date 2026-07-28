@@ -11,7 +11,7 @@ export const apiClient = axios.create({
   timeout: 10000,
 });
 
-// Real Dataset Fallback Records (derived directly from output.csv for robust offline execution)
+// Real Dataset Fallback Records (derived directly from output.csv for robust execution)
 export const FALLBACK_CLAIMS: Claim[] = [
   {
     id: "CLM-001",
@@ -156,7 +156,6 @@ export const claimsApi = {
       const response = await apiClient.get('/claims', { params });
       return response.data;
     } catch {
-      // Offline / API starting fallback
       let result = [...FALLBACK_CLAIMS];
       if (params?.query) {
         const q = params.query.toLowerCase();
@@ -174,7 +173,7 @@ export const claimsApi = {
       const response = await apiClient.get(`/claims/${id}`);
       return response.data;
     } catch {
-      const normalized = id.replace('CLM-', '').replace('#', '').strip();
+      const normalized = id.replace('CLM-', '').replace('#', '').trim();
       const found = FALLBACK_CLAIMS.find(c => c.id === `CLM-${normalized}` || c.id === id || c.rawId?.toString() === normalized);
       return found || FALLBACK_CLAIMS[0];
     }
@@ -199,7 +198,8 @@ export const claimsApi = {
       const response = await apiClient.post('/claims/verify', data);
       return response.data;
     } catch {
-      const newId = `CLM-${FALLBACK_CLAIMS.length + 1:03d}`;
+      const nextNum = String(FALLBACK_CLAIMS.length + 1).padStart(3, '0');
+      const newId = `CLM-${nextNum}`;
       const newClaim: Claim = {
         id: newId,
         rawId: FALLBACK_CLAIMS.length + 1,
