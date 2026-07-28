@@ -4,16 +4,10 @@
 
 import type { AiDecision, ClaimStatus, Severity } from '../types';
 
-/**
- * Conditionally join class names (simplified clsx)
- */
 export function cn(...classes: (string | boolean | undefined | null)[]): string {
   return classes.filter(Boolean).join(' ');
 }
 
-/**
- * Get badge styles for AI decisions
- */
 export function getDecisionStyles(decision: AiDecision): {
   bg: string;
   text: string;
@@ -44,17 +38,21 @@ export function getDecisionStyles(decision: AiDecision): {
       };
     case 'escalate':
       return {
-        bg: 'bg-tertiary/10 border-tertiary/20',
-        text: 'text-tertiary',
+        bg: 'bg-primary/10 border-primary/20',
+        text: 'text-primary',
         icon: 'AlertTriangle',
         label: 'Escalate',
+      };
+    default:
+      return {
+        bg: 'bg-primary/10 border-primary/20',
+        text: 'text-primary',
+        icon: 'CheckCircle2',
+        label: 'Approve',
       };
   }
 }
 
-/**
- * Get severity badge styles
- */
 export function getSeverityStyles(severity: Severity): {
   bg: string;
   text: string;
@@ -68,46 +66,43 @@ export function getSeverityStyles(severity: Severity): {
     case 'medium':
       return { bg: 'bg-warning/10', text: 'text-warning', label: 'Med' };
     case 'low':
-      return { bg: 'bg-secondary-container', text: 'text-text-muted', label: 'Low' };
+      return { bg: 'bg-surface-dim', text: 'text-text-muted', label: 'Low' };
+    default:
+      return { bg: 'bg-surface-dim', text: 'text-text-muted', label: 'Medium' };
   }
 }
 
-/**
- * Get status indicator styles
- */
 export function getStatusStyles(status: ClaimStatus): {
   dotColor: string;
   label: string;
   animate?: boolean;
 } {
   switch (status) {
-    case 'finalizing':
-      return { dotColor: 'bg-success', label: 'Finalizing', animate: true };
-    case 'flagged':
-      return { dotColor: 'bg-danger', label: 'Flagged' };
-    case 'awaiting_data':
-      return { dotColor: 'bg-warning', label: 'Awaiting Data' };
+    case 'supported':
+      return { dotColor: 'bg-success', label: 'Supported' };
     case 'completed':
       return { dotColor: 'bg-success', label: 'Completed' };
+    case 'flagged':
+      return { dotColor: 'bg-danger', label: 'Flagged' };
+    case 'rejected':
+      return { dotColor: 'bg-danger', label: 'Rejected' };
+    case 'not_enough_information':
+      return { dotColor: 'bg-warning', label: 'Insufficient Info' };
     case 'in_review':
       return { dotColor: 'bg-primary', label: 'In Review', animate: true };
     case 'escalated':
-      return { dotColor: 'bg-tertiary', label: 'Escalated' };
+      return { dotColor: 'bg-primary', label: 'Escalated' };
+    default:
+      return { dotColor: 'bg-success', label: 'Active' };
   }
 }
 
-/**
- * Get fraud score color based on value
- */
 export function getFraudScoreColor(score: number): string {
   if (score >= 70) return 'bg-danger';
   if (score >= 40) return 'bg-warning';
   return 'bg-success';
 }
 
-/**
- * Format number with commas
- */
 export function formatNumber(num: number): string {
   return num.toLocaleString();
 }
