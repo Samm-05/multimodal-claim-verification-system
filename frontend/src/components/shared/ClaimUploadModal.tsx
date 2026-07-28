@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Sparkles, CheckCircle2, Loader2, ArrowRight, Image as ImageIcon, Eye, ShieldCheck } from 'lucide-react';
+import { X, Upload, Sparkles, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
 import { useVerifyClaimMutation } from '../../hooks/useClaimsQuery';
 
 interface ClaimUploadModalProps {
@@ -180,7 +180,7 @@ export const ClaimUploadModal: React.FC<ClaimUploadModalProps> = ({ isOpen, onCl
                 />
               </div>
 
-              {/* Hero Hero Image Upload Zone */}
+              {/* Hero Image Upload Zone */}
               <div>
                 <label className="block text-xs font-bold text-[#A1A1AA] uppercase tracking-wider mb-2 font-mono">
                   3. Damage Image Evidence (Hero Drag &amp; Drop)
