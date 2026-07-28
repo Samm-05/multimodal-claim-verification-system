@@ -2,17 +2,16 @@ import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/shared/Sidebar';
 import { TopBar } from '../components/shared/TopBar';
+import { ClaimUploadModal } from '../components/shared/ClaimUploadModal';
+import { useClaimsStore } from '../store/useClaimsStore';
 import { useThemeStore } from '../store/useThemeStore';
 
 export const DashboardLayout: React.FC = () => {
   const theme = useThemeStore((state) => state.theme);
+  const { isUploadModalOpen, setUploadModalOpen } = useClaimsStore();
 
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    document.documentElement.classList.add('dark');
   }, [theme]);
 
   return (
@@ -30,6 +29,12 @@ export const DashboardLayout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Claim Upload / Multi-Agent Execution Modal */}
+      <ClaimUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setUploadModalOpen(false)}
+      />
     </div>
   );
 };
